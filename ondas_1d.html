@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Ondas 1D · Física III</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        :root {
+            --bg: #070b13;
+            --panel: rgba(255, 255, 255, .04);
+            --border: rgba(255, 255, 255, .08);
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --accent: #7c3aed;
+            --accent2: #0ea5e9;
+            --green: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --pink: #ec4899;
+            --font: 'Inter', sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            font-size: 13px
+        }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            height: 52px;
+            min-height: 52px;
+            background: rgba(10, 14, 24, .95);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 16px;
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            flex-shrink: 0
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 8px
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        .topbar-sep {
+            width: 1px;
+            height: 28px;
+            background: var(--border);
+            margin: 0 4px
+        }
+
+        /* Global controls */
+        .ctrl-group {
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .ctrl-label {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            white-space: nowrap
+        }
+
+        .tb-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            cursor: pointer;
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 500;
+            transition: all .2s;
+            white-space: nowrap
+        }
+
+        .tb-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(124, 58, 237, .1)
+        }
+
+        .tb-btn.active {
+            background: rgba(124, 58, 237, .25);
+            border-color: var(--accent);
+            color: #c4b5fd
+        }
+
+        .tb-btn.danger:hover {
+            border-color: var(--red);
+            color: var(--red);
+            background: rgba(239, 68, 68, .1)
+        }
+
+        .tb-btn.play {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-color: transparent;
+            min-width: 80px;
+            justify-content: center
+        }
+
+        .tb-btn.play:hover {
+            opacity: .85
+        }
+
+        /* Slider inline */
+        .tb-slider-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .tb-slider-wrap input[type=range] {
+            width: 80px;
+            accent-color: var(--accent2);
+            cursor: pointer
+        }
+
+        .tb-val {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--accent2);
+            min-width: 30px
+        }
+
+        /* Toggle switch */
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .toggle {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            flex-shrink: 0
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, .1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: .3s;
+            border: 1px solid var(--border)
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #94a3b8;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: .3s
+        }
+
+        .toggle input:checked~.toggle-slider {
+            background: var(--accent);
+            border-color: var(--accent)
+        }
+
+        .toggle input:checked~.toggle-slider::before {
+            transform: translateX(16px);
+            background: #fff
+        }
+
+        .toggle-label {
+            font-size: 11px;
+            color: var(--muted);
+            white-space: nowrap
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            min-height: 0
+        }
+
+        /* ===== LEFT PANEL ===== */
+        .left-panel {
+            width: 300px;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            background: rgba(5, 8, 16, .6);
+            overflow: hidden
+        }
+
+        .panel-hdr {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0
+        }
+
+        .panel-hdr-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--muted)
+        }
+
+        .add-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border: none;
+            color: #fff;
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity .2s
+        }
+
+        .add-btn:hover {
+            opacity: .85
+        }
+
+        .waves-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .waves-list::-webkit-scrollbar {
+            width: 4px
+        }
+
+        .waves-list::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        .waves-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .1);
+            border-radius: 2px
+        }
+
+        /* ===== WAVE CARD ===== */
+        .wave-card {
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: linear-gradient(145deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .01));
+            overflow: hidden;
+            transition: border-color .3s, box-shadow .3s
+        }
+
+        .wave-card:hover {
+            border-color: rgba(255, 255, 255, .14)
+        }
+
+        .wave-card[data-color] {
+            border-left: 3px solid var(--wc)
+        }
+
+        .card-hdr {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, .03);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer
+        }
+
+        .wave-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0
+        }
+
+        .card-formula-peek {
+            flex: 1;
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0
+        }
+
+        .card-hdr-btns {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0
+        }
+
+        .icon-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all .2s
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, .08);
+            color: var(--text)
+        }
+
+        .icon-btn.del:hover {
+            color: var(--red);
+            background: rgba(239, 68, 68, .12)
+        }
+
+        .card-body {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .card-body.collapsed {
+            display: none
+        }
+
+        /* KaTeX preview */
+        .katex-preview {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 10px;
+            min-height: 36px;
+            font-size: 13px;
+            overflow-x: auto;
+            text-align: center
+        }
+
+        .katex-preview .katex {
+            font-size: 1.1em
+        }
+
+        /* Formula textarea */
+        .formula-input {
+            width: 100%;
+            background: rgba(0, 0, 0, .3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 12px;
+            padding: 6px 8px;
+            resize: none;
+            height: 52px;
+            outline: none;
+            transition: border-color .2s;
+            line-height: 1.5
+        }
+
+        .formula-input:focus {
+            border-color: var(--accent);
+            background: rgba(124, 58, 237, .05)
+        }
+
+        /* Row label */
+        .row-lbl {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            margin-bottom: 3px
+        }
+
+        /* Sliders */
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .slider-row label {
+            font-size: 11px;
+            color: var(--muted);
+            min-width: 62px;
+            white-space: nowrap
+        }
+
+        .slider-row input[type=range] {
+            flex: 1;
+            height: 3px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, .1);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer
+        }
+
+        .slider-row input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--wc, #7c3aed);
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, .3)
+        }
+
+        .slider-row .sv {
+            font-family: var(--mono);
+            font-size: 11px;
+            min-width: 36px;
+            text-align: right;
+            color: var(--accent2)
+        }
+
+        /* Color + style row */
+        .cs-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .color-inp {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, .2);
+            padding: 0;
+            cursor: pointer;
+            background: none;
+            overflow: hidden
+        }
+
+        .color-inp::-webkit-color-swatch-wrapper {
+            padding: 0
+        }
+
+        .color-inp::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%
+        }
+
+        .style-btns {
+            display: flex;
+            gap: 4px
+        }
+
+        .style-btn {
+            padding: 4px 8px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all .2s
+        }
+
+        .style-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(124, 58, 237, .15)
+        }
+
+        /* ===== CANVAS AREA ===== */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            background: #04080f
+        }
+
+        canvas#sim {
+            display: block;
+            width: 100%;
+            height: 100%
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            pointer-events: none
+        }
+
+        .time-pill {
+            background: rgba(0, 0, 0, .7);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--accent2);
+            backdrop-filter: blur(8px)
+        }
+
+        .zoom-btns {
+            display: flex;
+            gap: 4px;
+            pointer-events: all
+        }
+
+        .z-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .6);
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s
+        }
+
+        .z-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        /* ===== KEYBOARD PANEL ===== */
+        .kbd-panel {
+            border-top: 1px solid var(--border);
+            background: rgba(5, 8, 16, .9);
+            flex-shrink: 0;
+            transition: max-height .35s ease;
+            overflow: hidden;
+            max-height: 0
+        }
+
+        .kbd-panel.open {
+            max-height: 220px
+        }
+
+        .kbd-toggle-bar {
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, .02);
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 11px;
+            transition: color .2s;
+            flex-shrink: 0
+        }
+
+        .kbd-toggle-bar:hover {
+            color: var(--text)
+        }
+
+        .kbd-inner {
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .kbd-tabs {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap
+        }
+
+        .kbd-tab {
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 11px;
+            transition: all .2s
+        }
+
+        .kbd-tab.active {
+            background: rgba(124, 58, 237, .25);
+            border-color: var(--accent);
+            color: #c4b5fd
+        }
+
+        .kbd-keys {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap
+        }
+
+        .k {
+            padding: 4px 9px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            background: rgba(255, 255, 255, .04);
+            color: var(--text);
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 11px;
+            transition: all .15s;
+            white-space: nowrap;
+            letter-spacing: 0
+        }
+
+        .k:hover {
+            background: rgba(124, 58, 237, .25);
+            border-color: var(--accent);
+            color: #c4b5fd
+        }
+
+        .k.wide {
+            min-width: 52px;
+            text-align: center
+        }
+
+        .k.op {
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, .25)
+        }
+
+        .k.fn {
+            color: #a78bfa
+        }
+
+        .k.const {
+            color: #fbbf24
+        }
+
+        .k.del-key {
+            color: var(--red);
+            border-color: rgba(239, 68, 68, .25)
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            height: 28px;
+            min-height: 28px;
+            background: rgba(4, 7, 10, .95);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            flex-shrink: 0
+        }
+
+        .footer-authors {
+            font-size: 10px;
+            color: var(--muted)
+        }
+
+        .footer-authors span {
+            color: var(--accent2)
+        }
+
+        .footer-gem {
+            font-size: 10px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .footer-gem i {
+            color: var(--accent)
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .08);
+            border-radius: 3px
+        }
+
+        /* Katex math size fix inside cards */
+        .katex-display {
+            margin: 0 !important
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== TOP BAR ===== -->
+    <header class="topbar">
+        <div class="logo">
+            <div class="logo-icon">〜</div>
+            <span class="logo-text">Ondas 1D</span>
+        </div>
+        <div class="topbar-sep"></div>
+
+        <div class="ctrl-group">
+            <button class="tb-btn play" id="btnPlay"><i class="fas fa-pause" id="playIcon"></i> <span
+                    id="playLabel">Pausar</span></button>
+            <button class="tb-btn danger" id="btnReset"><i class="fas fa-undo"></i> Reset</button>
+        </div>
+        <div class="topbar-sep"></div>
+
+        <div class="ctrl-group">
+            <span class="ctrl-label">Velocidad</span>
+            <div class="tb-slider-wrap">
+                <input type="range" id="globalSpeed" min="0.1" max="5" step="0.1" value="1">
+                <span class="tb-val" id="speedVal">1.0×</span>
+            </div>
+        </div>
+        <div class="topbar-sep"></div>
+
+        <div class="ctrl-group">
+            <label class="toggle-wrap">
+                <span class="toggle-label">Resultante</span>
+                <label class="toggle"><input type="checkbox" id="togResultant" checked><span
+                        class="toggle-slider"></span></label>
+            </label>
+            <label class="toggle-wrap">
+                <span class="toggle-label">Grilla</span>
+                <label class="toggle"><input type="checkbox" id="togGrid" checked><span
+                        class="toggle-slider"></span></label>
+            </label>
+            <label class="toggle-wrap">
+                <span class="toggle-label">Ejes</span>
+                <label class="toggle"><input type="checkbox" id="togAxes" checked><span
+                        class="toggle-slider"></span></label>
+            </label>
+            <label class="toggle-wrap">
+                <span class="toggle-label">Componentes</span>
+                <label class="toggle"><input type="checkbox" id="togComponents" checked><span
+                        class="toggle-slider"></span></label>
+            </label>
+        </div>
+        <div class="topbar-sep"></div>
+
+        <div class="ctrl-group">
+            <span class="ctrl-label">x</span>
+            <div class="tb-slider-wrap">
+                <input type="range" id="xRange" min="5" max="80" step="1" value="20">
+                <span class="tb-val" id="xRangeVal">±20</span>
+            </div>
+        </div>
+        <div class="topbar-sep"></div>
+
+        <button class="tb-btn" id="btnKbd"><i class="fas fa-keyboard"></i> Teclado</button>
+    </header>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main">
+
+        <!-- LEFT PANEL -->
+        <aside class="left-panel">
+            <div class="panel-hdr">
+                <span class="panel-hdr-title"><i class="fas fa-wave-square"></i> Funciones de onda</span>
+                <button class="add-btn" id="btnAdd"><i class="fas fa-plus"></i> Agregar</button>
+            </div>
+            <div class="waves-list" id="wavesList"></div>
+        </aside>
+
+        <!-- CANVAS + KEYBOARD WRAPPER -->
+        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0">
+            <div class="canvas-area" style="flex:1">
+                <canvas id="sim"></canvas>
+                <div class="canvas-overlay">
+                    <div class="time-pill">t = <span id="timeDisplay">0.000</span> s</div>
+                    <div class="zoom-btns">
+                        <button class="z-btn" id="btnZoomIn" title="Ampliar"><i class="fas fa-plus"></i></button>
+                        <button class="z-btn" id="btnZoomOut" title="Reducir"><i class="fas fa-minus"></i></button>
+                        <button class="z-btn" id="btnZoomReset" title="Reset zoom"><i
+                                class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KEYBOARD TOGGLE BAR -->
+            <div class="kbd-toggle-bar" id="kbdToggleBar">
+                <i class="fas fa-keyboard"></i>
+                <span id="kbdToggleLabel">Mostrar teclado matemático</span>
+                <i class="fas fa-chevron-up" id="kbdArrow"></i>
+            </div>
+
+            <!-- KEYBOARD PANEL -->
+            <div class="kbd-panel" id="kbdPanel">
+                <div class="kbd-inner">
+                    <div class="kbd-tabs" id="kbdTabs"></div>
+                    <div class="kbd-keys" id="kbdKeys"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-authors">
+            <span>V. M. González</span> · <span>S. Carmona G.</span> · <span>A. Jaramillo R.</span>
+            — Simulador de Ondas 1D
+        </div>
+        <div class="footer-gem"><i class="fas fa-robot"></i> Asistido por Gemini · 2026</div>
+    </footer>
+
+    <script>
+        /* ============================================================
+           STATE
+           ============================================================ */
+        const S = {
+            waves: [],
+            playing: true,
+            time: 0,
+            globalSpeed: 1,
+            showResultant: true,
+            showGrid: true,
+            showAxes: true,
+            showComponents: true,
+            xHalf: 20,
+            yZoom: 1,
+            activeInput: null,
+            kbdOpen: false,
+            kbdTab: 0,
+            animId: null,
+            lastTs: null,
+            waveColors: ['#a78bfa', '#38bdf8', '#fb923c', '#34d399', '#f472b6', '#facc15', '#f87171', '#818cf8'],
+            nextId: 1,
+        };
+
+        /* ============================================================
+           WAVE EVALUATOR
+           ============================================================ */
+        function buildEval(expr) {
+            if (!expr.trim()) return () => 0;
+            let e = expr
+                .replace(/\bpi\b/gi, 'Math.PI')
+                .replace(/\be\b/g, 'Math.E')
+                .replace(/\bsin\b/g, 'Math.sin')
+                .replace(/\bcos\b/g, 'Math.cos')
+                .replace(/\btan\b/g, 'Math.tan')
+                .replace(/\basin\b/g, 'Math.asin')
+                .replace(/\bacos\b/g, 'Math.acos')
+                .replace(/\batan2\b/g, 'Math.atan2')
+                .replace(/\batan\b/g, 'Math.atan')
+                .replace(/\bsinh\b/g, 'Math.sinh')
+                .replace(/\bcosh\b/g, 'Math.cosh')
+                .replace(/\btanh\b/g, 'Math.tanh')
+                .replace(/\basinh\b/g, 'Math.asinh')
+                .replace(/\bacosh\b/g, 'Math.acosh')
+                .replace(/\batanh\b/g, 'Math.atanh')
+                .replace(/\bsqrt\b/g, 'Math.sqrt')
+                .replace(/\bcbrt\b/g, 'Math.cbrt')
+                .replace(/\babs\b/g, 'Math.abs')
+                .replace(/\blog10\b/g, 'Math.log10')
+                .replace(/\blog2\b/g, 'Math.log2')
+                .replace(/\blog\b/g, 'Math.log10')
+                .replace(/\bln\b/g, 'Math.log')
+                .replace(/\bexp\b/g, 'Math.exp')
+                .replace(/\bfloor\b/g, 'Math.floor')
+                .replace(/\bceil\b/g, 'Math.ceil')
+                .replace(/\bround\b/g, 'Math.round')
+                .replace(/\bsign\b/g, 'Math.sign')
+                .replace(/\bmax\b/g, 'Math.max')
+                .replace(/\bmin\b/g, 'Math.min')
+                .replace(/\bmod\b/g, '%')
+                .replace(/\^/g, '**');
+            try {
+                const fn = new Function('x', 't', `"use strict";try{return +(${e});}catch(e){return 0;}`);
+                fn(0, 0); return fn;
+            } catch (_) { return () => NaN; }
+        }
+
+        function exprToLatex(expr) {
+            return expr
+                .replace(/\bsin\b/g, '\\sin').replace(/\bcos\b/g, '\\cos').replace(/\btan\b/g, '\\tan')
+                .replace(/\basin\b/g, '\\arcsin').replace(/\bacos\b/g, '\\arccos').replace(/\batan\b/g, '\\arctan')
+                .replace(/\bsinh\b/g, '\\sinh').replace(/\bcosh\b/g, '\\cosh').replace(/\btanh\b/g, '\\tanh')
+                .replace(/\bsqrt\b/g, '\\sqrt').replace(/\bcbrt\b/g, '\\sqrt[3]')
+                .replace(/\babs\b/g, '\\left|').replace(/\bln\b/g, '\\ln').replace(/\blog\b/g, '\\log')
+                .replace(/\bexp\b/g, '\\exp').replace(/\bpi\b/gi, '\\pi').replace(/\*/g, '\\cdot ')
+                .replace(/\*\*/g, '^').replace(/\^(\d)/g, '^{$1}');
+        }
+
+        function renderLatex(el, expr) {
+            const raw = expr.trim() || '0';
+            const latex = exprToLatex(raw);
+            try {
+                katex.render(`y(x,t)=${latex}`, el, { throwOnError: false, displayMode: false });
+            } catch (_) {
+                el.textContent = `y(x,t) = ${raw}`;
+            }
+        }
+
+        /* ============================================================
+           ADD / REMOVE WAVES
+           ============================================================ */
+        function addWave(opts = {}) {
+            const id = S.nextId++;
+            const color = opts.color || S.waveColors[(S.waves.length) % S.waveColors.length];
+            const w = {
+                id,
+                formula: opts.formula || 'sin(x - 2*t)',
+                color,
+                lineWidth: opts.lineWidth || 2,
+                lineStyle: opts.lineStyle || 'solid',
+                amplitude: opts.amplitude ?? 1,
+                speed: opts.speed ?? 1,
+                visible: true,
+                fn: null,
+                label: `W${id}`,
+            };
+            w.fn = buildEval(w.formula);
+            S.waves.push(w);
+            buildCard(w);
+        }
+
+        function removeWave(id) {
+            S.waves = S.waves.filter(w => w.id !== id);
+            document.getElementById(`card-${id}`)?.remove();
+        }
+
+        /* ============================================================
+           WAVE CARD UI
+           ============================================================ */
+        function buildCard(w) {
+            const list = document.getElementById('wavesList');
+            const card = document.createElement('article');
+            card.className = 'wave-card';
+            card.id = `card-${w.id}`;
+            card.style.setProperty('--wc', w.color);
+            card.setAttribute('data-color', w.color);
+
+            card.innerHTML = `
+  <div class="card-hdr" id="hdr-${w.id}">
+    <div class="wave-badge" style="background:${w.color}" id="badge-${w.id}">${w.label}</div>
+    <div class="card-formula-peek" id="peek-${w.id}">${w.formula}</div>
+    <div class="card-hdr-btns">
+      <button class="icon-btn" id="vis-${w.id}" title="Mostrar/Ocultar"><i class="fas fa-eye"></i></button>
+      <button class="icon-btn" id="col-${w.id}" title="Colapsar"><i class="fas fa-chevron-up"></i></button>
+      <button class="icon-btn del" id="del-${w.id}" title="Eliminar"><i class="fas fa-trash"></i></button>
+    </div>
+  </div>
+  <div class="card-body" id="body-${w.id}">
+    <div>
+      <div class="row-lbl">Vista previa KaTeX</div>
+      <div class="katex-preview" id="kprev-${w.id}"></div>
+    </div>
+    <div>
+      <div class="row-lbl">y(x,t) = <span style="color:#64748b;font-size:9px">(usa x, t, sin, cos, pi, e, sqrt, exp, ln…)</span></div>
+      <textarea class="formula-input" id="finp-${w.id}" spellcheck="false">${w.formula}</textarea>
+    </div>
+    <div class="slider-row">
+      <label>Amplitud</label>
+      <input type="range" id="amp-${w.id}" min="0.1" max="5" step="0.05" value="${w.amplitude}">
+      <span class="sv" id="ampv-${w.id}">${w.amplitude.toFixed(2)}</span>
+    </div>
+    <div class="slider-row">
+      <label>Velocidad v</label>
+      <input type="range" id="spd-${w.id}" min="-10" max="10" step="0.1" value="${w.speed}">
+      <span class="sv" id="spdv-${w.id}">${w.speed.toFixed(1)}</span>
+    </div>
+    <div class="slider-row">
+      <label>Grosor</label>
+      <input type="range" id="lw-${w.id}" min="0.5" max="6" step="0.5" value="${w.lineWidth}">
+      <span class="sv" id="lwv-${w.id}">${w.lineWidth}</span>
+    </div>
+    <div class="cs-row">
+      <input type="color" class="color-inp" id="clr-${w.id}" value="${w.color}" title="Color">
+      <div class="style-btns">
+        <button class="style-btn ${w.lineStyle === 'solid' ? 'active' : ''}" data-style="solid" data-wid="${w.id}">─</button>
+        <button class="style-btn ${w.lineStyle === 'dashed' ? 'active' : ''}" data-style="dashed" data-wid="${w.id}">╌</button>
+        <button class="style-btn ${w.lineStyle === 'dotted' ? 'active' : ''}" data-style="dotted" data-wid="${w.id}">···</button>
+      </div>
+    </div>
+  </div>`;
+
+            list.appendChild(card);
+
+            // KaTeX preview
+            renderLatex(document.getElementById(`kprev-${w.id}`), w.formula);
+
+            // Formula input
+            const finp = document.getElementById(`finp-${w.id}`);
+            finp.addEventListener('focus', () => { S.activeInput = finp; });
+            finp.addEventListener('input', () => {
+                w.formula = finp.value;
+                w.fn = buildEval(w.formula);
+                document.getElementById(`peek-${w.id}`).textContent = w.formula;
+                renderLatex(document.getElementById(`kprev-${w.id}`), w.formula);
+            });
+
+            // Sliders
+            document.getElementById(`amp-${w.id}`).addEventListener('input', e => {
+                w.amplitude = +e.target.value;
+                document.getElementById(`ampv-${w.id}`).textContent = w.amplitude.toFixed(2);
+            });
+            document.getElementById(`spd-${w.id}`).addEventListener('input', e => {
+                w.speed = +e.target.value;
+                document.getElementById(`spdv-${w.id}`).textContent = w.speed.toFixed(1);
+            });
+            document.getElementById(`lw-${w.id}`).addEventListener('input', e => {
+                w.lineWidth = +e.target.value;
+                document.getElementById(`lwv-${w.id}`).textContent = w.lineWidth;
+            });
+
+            // Color
+            document.getElementById(`clr-${w.id}`).addEventListener('input', e => {
+                w.color = e.target.value;
+                card.style.setProperty('--wc', w.color);
+                card.setAttribute('data-color', w.color);
+                document.getElementById(`badge-${w.id}`).style.background = w.color;
+                document.querySelectorAll(`[data-wid="${w.id}"] input[type=range]`).forEach(s => s.style.accentColor = w.color);
+            });
+
+            // Line style
+            card.querySelectorAll('.style-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const wid = +btn.dataset.wid, st = btn.dataset.style;
+                    const wave = S.waves.find(wv => wv.id === wid);
+                    if (wave) { wave.lineStyle = st; }
+                    card.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+
+            // Visibility
+            document.getElementById(`vis-${w.id}`).addEventListener('click', () => {
+                w.visible = !w.visible;
+                const icon = document.querySelector(`#vis-${w.id} i`);
+                icon.className = w.visible ? 'fas fa-eye' : 'fas fa-eye-slash';
+            });
+
+            // Collapse
+            let collapsed = false;
+            document.getElementById(`col-${w.id}`).addEventListener('click', e => {
+                e.stopPropagation();
+                collapsed = !collapsed;
+                document.getElementById(`body-${w.id}`).classList.toggle('collapsed', collapsed);
+                document.querySelector(`#col-${w.id} i`).className = collapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+            });
+
+            // Delete
+            document.getElementById(`del-${w.id}`).addEventListener('click', () => removeWave(w.id));
+
+            return card;
+        }
+
+        /* ============================================================
+           CANVAS RENDERING
+           ============================================================ */
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        function resizeCanvas() {
+            const r = canvas.parentElement.getBoundingClientRect();
+            canvas.width = r.width * dpr; canvas.height = r.height * dpr;
+            canvas.style.width = r.width + 'px'; canvas.style.height = r.height + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function worldToCanvas(x, y, W, H, xH) {
+            const cx = W / 2 + x * (W / (2 * xH));
+            const cy = H / 2 - y * (H / (4 * S.yZoom));
+            return [cx, cy];
+        }
+
+        function drawFrame() {
+            const W = canvas.width / dpr, H = canvas.height / dpr;
+            const xH = S.xHalf;
+
+            ctx.clearRect(0, 0, W, H);
+
+            // Background gradient
+            const bg = ctx.createLinearGradient(0, 0, 0, H);
+            bg.addColorStop(0, '#04080f'); bg.addColorStop(1, '#060c18');
+            ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+            // Grid
+            if (S.showGrid) {
+                ctx.strokeStyle = 'rgba(255,255,255,.04)'; ctx.lineWidth = .5;
+                const step = Math.ceil(xH / 10);
+                for (let xi = -xH; xi <= xH; xi += step) {
+                    const [cx] = worldToCanvas(xi, 0, W, H, xH);
+                    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+                }
+                const ySteps = [-3, -2, -1, 0, 1, 2, 3];
+                ySteps.forEach(yi => {
+                    const [, cy] = worldToCanvas(0, yi, W, H, xH);
+                    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+                });
+                // Finer grid
+                ctx.strokeStyle = 'rgba(255,255,255,.02)';
+                for (let xi = -xH; xi <= xH; xi += 1) {
+                    const [cx] = worldToCanvas(xi, 0, W, H, xH);
+                    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+                }
+            }
+
+            // Axes
+            if (S.showAxes) {
+                const [, cy0] = worldToCanvas(0, 0, W, H, xH);
+                ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(0, cy0); ctx.lineTo(W, cy0); ctx.stroke();
+                // x labels
+                ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.font = `10px 'JetBrains Mono',monospace`;
+                const lstep = Math.ceil(xH / 8);
+                for (let xi = -xH; xi <= xH; xi += lstep) {
+                    if (xi === 0) continue;
+                    const [cx, cy] = worldToCanvas(xi, 0, W, H, xH);
+                    ctx.fillText(xi, cx - 8, cy0 + 14);
+                    ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.lineWidth = .5;
+                    ctx.beginPath(); ctx.moveTo(cx, cy0 - 3); ctx.lineTo(cx, cy0 + 3); ctx.stroke();
+                }
+                // y axe (center)
+                const cx0 = W / 2;
+                ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(cx0, 0); ctx.lineTo(cx0, H); ctx.stroke();
+                ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = `11px 'JetBrains Mono',monospace`;
+                ctx.fillText('x', W - 12, cy0 - 8);
+                ctx.fillText('y', cx0 + 6, 14);
+                ctx.fillText('0', cx0 + 4, cy0 + 14);
+            }
+
+            const N = Math.round(W * 1.5);
+            const resultY = new Float64Array(N);
+
+            // Plot component waves
+            S.waves.forEach(w => {
+                if (!w.fn || (!S.showComponents && S.showResultant)) return;
+                if (!w.visible && S.showResultant) {
+                    // invisible but still add to resultant
+                }
+                const dashMap = { solid: null, dashed: [8, 5], dotted: [2, 4] };
+                if (w.visible && S.showComponents) {
+                    ctx.save();
+                    ctx.strokeStyle = w.color; ctx.lineWidth = w.lineWidth;
+                    const d = dashMap[w.lineStyle];
+                    if (d) ctx.setLineDash(d); else ctx.setLineDash([]);
+                    ctx.shadowColor = w.color; ctx.shadowBlur = 8;
+                    ctx.beginPath();
+                    let first = true;
+                    for (let i = 0; i < N; i++) {
+                        const xw = -xH + i * (2 * xH) / (N - 1);
+                        const raw = w.fn(xw - w.speed * S.time, S.time);
+                        const yv = w.amplitude * (isFinite(raw) ? raw : 0);
+                        resultY[i] += yv;
+                        const [cx, cy] = worldToCanvas(xw, yv, W, H, xH);
+                        if (first) { ctx.moveTo(cx, cy); first = false; } else ctx.lineTo(cx, cy);
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+                } else {
+                    // invisible wave — still compute resultant
+                    for (let i = 0; i < N; i++) {
+                        const xw = -xH + i * (2 * xH) / (N - 1);
+                        const raw = w.fn(xw - w.speed * S.time, S.time);
+                        resultY[i] += w.amplitude * (isFinite(raw) ? raw : 0);
+                    }
+                }
+            });
+
+            // Resultant
+            if (S.showResultant && S.waves.length > 1) {
+                ctx.save();
+                const gr = ctx.createLinearGradient(0, 0, W, 0);
+                gr.addColorStop(0, '#fbbf24'); gr.addColorStop(.5, '#f0abfc'); gr.addColorStop(1, '#38bdf8');
+                ctx.strokeStyle = gr; ctx.lineWidth = 2.5;
+                ctx.shadowColor = 'rgba(251,191,36,.5)'; ctx.shadowBlur = 14;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                for (let i = 0; i < N; i++) {
+                    const xw = -xH + i * (2 * xH) / (N - 1);
+                    const [cx, cy] = worldToCanvas(xw, resultY[i], W, H, xH);
+                    if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+                }
+                ctx.stroke();
+
+                // Label
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(251,191,36,.8)'; ctx.font = `bold 11px 'Inter',sans-serif`;
+                ctx.fillText('Σ Resultante', 8, 22);
+                ctx.restore();
+            }
+
+            // Time display
+            document.getElementById('timeDisplay').textContent = S.time.toFixed(3);
+        }
+
+        /* ============================================================
+           ANIMATION LOOP
+           ============================================================ */
+        function loop(ts) {
+            S.animId = requestAnimationFrame(loop);
+            const dt = S.lastTs != null ? (ts - S.lastTs) / 1000 : 0;
+            S.lastTs = ts;
+            if (S.playing) {
+                S.time += dt * S.globalSpeed;
+            }
+            drawFrame();
+        }
+
+        /* ============================================================
+           MATH KEYBOARD
+           ============================================================ */
+        const KTABS = [
+            {
+                name: 'Básico', keys: [
+                    { d: 'x', ins: 'x', cls: 'const' }, { d: 't', ins: 't', cls: 'const' }, { d: 'π', ins: 'pi', cls: 'const' }, { d: 'e', ins: 'e', cls: 'const' },
+                    { d: '(', ins: '(', cls: 'op' }, { d: ')', ins: ')', cls: 'op' }, { d: ',', ins: ',' },
+                    { d: '0', ins: '0' }, { d: '1', ins: '1' }, { d: '2', ins: '2' }, { d: '3', ins: '3' }, { d: '4', ins: '4' },
+                    { d: '5', ins: '5' }, { d: '6', ins: '6' }, { d: '7', ins: '7' }, { d: '8', ins: '8' }, { d: '9', ins: '9' }, { d: '.', ins: '.' },
+                    { d: '+', ins: '+', cls: 'op' }, { d: '−', ins: '-', cls: 'op' }, { d: '×', ins: '*', cls: 'op' }, { d: '÷', ins: '/', cls: 'op' },
+                    { d: '^', ins: '^', cls: 'op' }, { d: '²', ins: '^2' }, { d: '³', ins: '^3' }, { d: '½', ins: '(1/2)' },
+                    { d: '⌫', ins: '__BS__', cls: 'del-key wide' },
+                    { d: 'AC', ins: '__CLR__', cls: 'del-key wide' },
+                ]
+            },
+            {
+                name: 'Trig', keys: [
+                    { d: 'sin( )', ins: 'sin(', cls: 'fn' }, { d: 'cos( )', ins: 'cos(', cls: 'fn' }, { d: 'tan( )', ins: 'tan(', cls: 'fn' },
+                    { d: 'arcsin( )', ins: 'asin(', cls: 'fn' }, { d: 'arccos( )', ins: 'acos(', cls: 'fn' }, { d: 'arctan( )', ins: 'atan(', cls: 'fn' },
+                    { d: 'atan2( )', ins: 'atan2(', cls: 'fn' },
+                    { d: 'sin²', ins: 'sin(^2', cls: 'fn' }, { d: 'cos²', ins: 'cos(^2', cls: 'fn' },
+                    { d: 'sin(x−vt)', ins: 'sin(x - 2*t)', cls: 'fn wide' }, { d: 'cos(x−vt)', ins: 'cos(x - 2*t)', cls: 'fn wide' },
+                ]
+            },
+            {
+                name: 'Hiperbólicas', keys: [
+                    { d: 'sinh( )', ins: 'sinh(', cls: 'fn' }, { d: 'cosh( )', ins: 'cosh(', cls: 'fn' }, { d: 'tanh( )', ins: 'tanh(', cls: 'fn' },
+                    { d: 'asinh( )', ins: 'asinh(', cls: 'fn' }, { d: 'acosh( )', ins: 'acosh(', cls: 'fn' }, { d: 'atanh( )', ins: 'atanh(', cls: 'fn' },
+                ]
+            },
+            {
+                name: 'Potencias & Raíces', keys: [
+                    { d: '√( )', ins: 'sqrt(', cls: 'fn' }, { d: '∛( )', ins: 'cbrt(', cls: 'fn' },
+                    { d: 'xⁿ', ins: '^', cls: 'op' }, { d: 'x²', ins: '^2' }, { d: 'x³', ins: '^3' },
+                    { d: '1/x', ins: '1/(', cls: 'fn' }, { d: 'x⁻¹', ins: '^(-1)' },
+                    { d: 'eˣ', ins: 'exp(', cls: 'fn' }, { d: '2ˣ', ins: '2^(', cls: 'fn' },
+                    { d: 'Gaussiana', ins: 'exp(-((x-2*t)^2))', cls: 'fn wide' },
+                    { d: 'Cuadrada', ins: 'sign(sin(x-t))', cls: 'fn wide' },
+                ]
+            },
+            {
+                name: 'Log & Exp', keys: [
+                    { d: 'ln( )', ins: 'ln(', cls: 'fn' }, { d: 'log( )', ins: 'log(', cls: 'fn' },
+                    { d: 'log₂( )', ins: 'log2(', cls: 'fn' }, { d: 'exp( )', ins: 'exp(', cls: 'fn' },
+                    { d: 'eˣ', ins: 'exp(x - t)', cls: 'fn' }, { d: 'e^(ix)', ins: 'exp(', cls: 'fn' },
+                ]
+            },
+            {
+                name: 'Especiales', keys: [
+                    { d: '|x|', ins: 'abs(', cls: 'fn' }, { d: 'sgn( )', ins: 'sign(', cls: 'fn' },
+                    { d: '⌊x⌋', ins: 'floor(', cls: 'fn' }, { d: '⌈x⌉', ins: 'ceil(', cls: 'fn' },
+                    { d: 'round( )', ins: 'round(', cls: 'fn' },
+                    { d: 'max( )', ins: 'max(', cls: 'fn' }, { d: 'min( )', ins: 'min(', cls: 'fn' },
+                    { d: 'mod', ins: '%', cls: 'op' }, { d: '%', ins: '%', cls: 'op' },
+                    { d: 'onda pulso', ins: 'abs(x - t) < 1 ? 1 : 0', cls: 'fn wide' },
+                    { d: 'diente de sierra', ins: '((x - t) % (2*pi) + pi) / pi - 1', cls: 'fn wide' },
+                ]
+            },
+        ];
+
+        function initKeyboard() {
+            const tabsEl = document.getElementById('kbdTabs');
+            const keysEl = document.getElementById('kbdKeys');
+
+            function renderTab(idx) {
+                S.kbdTab = idx;
+                tabsEl.querySelectorAll('.kbd-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+                keysEl.innerHTML = '';
+                KTABS[idx].keys.forEach(k => {
+                    const btn = document.createElement('button');
+                    btn.className = `k ${k.cls || ''}`;
+                    btn.innerHTML = k.d;
+                    btn.title = k.ins;
+                    btn.addEventListener('mousedown', e => {
+                        e.preventDefault();
+                        if (!S.activeInput) return;
+                        const inp = S.activeInput;
+                        if (k.ins === '__BS__') {
+                            const s = inp.selectionStart, e2 = inp.selectionEnd;
+                            if (s !== e2) { inp.setRangeText('', s, e2, 'end'); }
+                            else if (s > 0) { inp.setRangeText('', s - 1, s, 'end'); }
+                        } else if (k.ins === '__CLR__') {
+                            inp.value = '';
+                        } else {
+                            const pos = inp.selectionStart;
+                            inp.setRangeText(k.ins, pos, inp.selectionEnd, 'end');
+                        }
+                        inp.dispatchEvent(new Event('input'));
+                        inp.focus();
+                    });
+                    keysEl.appendChild(btn);
+                });
+            }
+
+            KTABS.forEach((tab, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'kbd-tab' + (i === 0 ? ' active' : '');
+                btn.textContent = tab.name;
+                btn.addEventListener('click', () => renderTab(i));
+                tabsEl.appendChild(btn);
+            });
+            renderTab(0);
+        }
+
+        /* ============================================================
+           CONTROLS WIRING
+           ============================================================ */
+        document.getElementById('btnPlay').addEventListener('click', () => {
+            S.playing = !S.playing;
+            document.getElementById('playIcon').className = S.playing ? 'fas fa-pause' : 'fas fa-play';
+            document.getElementById('playLabel').textContent = S.playing ? 'Pausar' : 'Reanudar';
+        });
+
+        document.getElementById('btnReset').addEventListener('click', () => {
+            S.time = 0; S.lastTs = null;
+        });
+
+        document.getElementById('globalSpeed').addEventListener('input', e => {
+            S.globalSpeed = +e.target.value;
+            document.getElementById('speedVal').textContent = S.globalSpeed.toFixed(1) + '×';
+        });
+
+        document.getElementById('togResultant').addEventListener('change', e => S.showResultant = e.target.checked);
+        document.getElementById('togGrid').addEventListener('change', e => S.showGrid = e.target.checked);
+        document.getElementById('togAxes').addEventListener('change', e => S.showAxes = e.target.checked);
+        document.getElementById('togComponents').addEventListener('change', e => S.showComponents = e.target.checked);
+
+        document.getElementById('xRange').addEventListener('input', e => {
+            S.xHalf = +e.target.value;
+            document.getElementById('xRangeVal').textContent = '±' + S.xHalf;
+        });
+
+        document.getElementById('btnZoomIn').addEventListener('click', () => { S.yZoom = Math.min(S.yZoom * 1.3, 10); });
+        document.getElementById('btnZoomOut').addEventListener('click', () => { S.yZoom = Math.max(S.yZoom / 1.3, .1); });
+        document.getElementById('btnZoomReset').addEventListener('click', () => { S.yZoom = 1; S.xHalf = 20; document.getElementById('xRange').value = 20; document.getElementById('xRangeVal').textContent = '±20'; });
+
+        // Mouse wheel zoom on canvas
+        canvas.addEventListener('wheel', e => {
+            e.preventDefault();
+            if (e.deltaY < 0) S.yZoom = Math.min(S.yZoom * 1.1, 10);
+            else S.yZoom = Math.max(S.yZoom / 1.1, .1);
+        }, { passive: false });
+
+        // Keyboard toggle
+        const kbdPanel = document.getElementById('kbdPanel');
+        function toggleKbd() {
+            S.kbdOpen = !S.kbdOpen;
+            kbdPanel.classList.toggle('open', S.kbdOpen);
+            document.getElementById('kbdToggleLabel').textContent = S.kbdOpen ? 'Ocultar teclado matemático' : 'Mostrar teclado matemático';
+            document.getElementById('kbdArrow').className = S.kbdOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+        }
+        document.getElementById('kbdToggleBar').addEventListener('click', toggleKbd);
+        document.getElementById('btnKbd').addEventListener('click', () => { toggleKbd(); kbdPanel.scrollIntoView({ behavior: 'smooth' }); });
+
+        document.getElementById('btnAdd').addEventListener('click', () => {
+            const formulas = ['sin(x - 2*t)', 'cos(x - 3*t)', '0.5*sin(2*x - t)', 'exp(-((x-2*t)^2))'];
+            addWave({ formula: formulas[(S.waves.length) % formulas.length] || 'sin(x-t)' });
+        });
+
+        window.addEventListener('resize', () => { dpr = window.devicePixelRatio || 1; resizeCanvas(); });
+
+        /* ============================================================
+           INIT
+           ============================================================ */
+        resizeCanvas();
+        initKeyboard();
+
+        // Default waves
+        addWave({ formula: 'sin(x - 2*t)', color: '#a78bfa' });
+        addWave({ formula: 'sin(x - 3*t) * 0.7', color: '#38bdf8' });
+
+        requestAnimationFrame(loop);
+
+        // Open keyboard by default after 500ms
+        setTimeout(() => { toggleKbd(); }, 600);
+    </script>
+</body>
+
+</html>

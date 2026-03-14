@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Física III — Movimiento Oscilatorio y Armónico Simple</title>
+    <meta name="description" content="Cuaderno de Física III: Movimiento Oscilatorio y Armónico Simple">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        :root {
+            --notebook-bg: #fdf6e3;
+            --notebook-line: #c8dbbe;
+            --notebook-margin: #e8b4b8;
+            --ink-color: #1a1a2e;
+            --ink-title: #16213e;
+            --ink-accent: #0f3460;
+            --ink-highlight: #e94560;
+            --cover-bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --cover-accent: #e94560;
+            --cover-gold: #f0c27f;
+            --paper-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            --font-handwriting: 'Caveat', cursive;
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: #e8e0d0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4c8b0' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            min-height: 100vh;
+            line-height: 1.7;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ========== COVER PAGE — Premium Academic Book ========== */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+
+        .cover-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0d0d0d;
+            padding: 2rem;
+        }
+
+        .cover-notebook {
+            width: 100%;
+            max-width: 960px;
+            min-height: 88vh;
+            background: #111827;
+            border-radius: 4px 12px 12px 4px;
+            box-shadow:
+                -8px 0 0 #0a0f1a,
+                -14px 0 0 #050a12,
+                0 20px 80px rgba(0, 0, 0, 0.8),
+                inset 0 0 120px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        /* Spine strip on the left */
+        .cover-notebook::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 52px;
+            background: linear-gradient(180deg, #0a0f1a 0%, #0d1525 50%, #0a0f1a 100%);
+            border-right: 1px solid rgba(200, 168, 80, 0.25);
+            display: block;
+        }
+
+        /* Subtle texture overlay */
+        .cover-notebook::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='1' height='1' fill='%23ffffff' fill-opacity='0.018'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            display: block;
+        }
+
+        /* Canvas sits behind content */
+        .cover-physics {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        #coverCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.18;
+        }
+
+        /* Hidden floating formulas */
+        .cover-formula {
+            display: none;
+        }
+
+        .cover-authors-area {
+            display: none;
+        }
+
+        /* ---- COVER CONTENT LAYOUT ---- */
+        .cover-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 88vh;
+            padding: 3.5rem 3.5rem 3rem 5.5rem;
+        }
+
+        /* Top strip: subject tag */
+        .cover-tag {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #c8a850;
+            border-bottom: 1px solid rgba(200, 168, 80, 0.3);
+            padding-bottom: 0.7rem;
+            margin-bottom: auto;
+        }
+
+        /* Main title block */
+        .cover-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0;
+        }
+
+        .cover-edition {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(200, 168, 80, 0.7);
+            margin-bottom: 1.4rem;
+        }
+
+        .cover-title-area {
+            display: block;
+            margin-bottom: 1.8rem;
+        }
+
+        .cover-title {
+            font-family: 'Playfair Display', 'Georgia', serif;
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 900;
+            color: #f5f0e8;
+            line-height: 1.05;
+            letter-spacing: -0.01em;
+            margin: 0 0 0.3rem;
+            text-shadow: 0 2px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .cover-subtitle {
+            font-family: 'Playfair Display', 'Georgia', serif;
+            font-size: clamp(1.1rem, 2.2vw, 1.55rem);
+            font-weight: 400;
+            font-style: italic;
+            color: #c8a850;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* Gold rule divider */
+        .cover-rule {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #c8a850 20%, #c8a850 80%, transparent);
+            margin: 2rem 0;
+            opacity: 0.6;
+        }
+
+        /* Description blurb */
+        .cover-blurb {
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            color: rgba(220, 210, 195, 0.65);
+            line-height: 1.7;
+            max-width: 480px;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Authors block */
+        .cover-authors {
+            border-top: 1px solid rgba(200, 168, 80, 0.25);
+            padding-top: 1.2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+
+        .cover-authors-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(200, 168, 80, 0.55);
+            padding-top: 0.1rem;
+            white-space: nowrap;
+        }
+
+        .cover-authors-names {
+            font-family: 'Playfair Display', 'Georgia', serif;
+            font-size: 0.98rem;
+            color: #d6cbb8;
+            line-height: 1.7;
+        }
+
+        /* Publisher footer */
+        .cover-footer {
+            margin-top: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cover-publisher {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(200, 168, 80, 0.4);
+        }
+
+        .cover-year {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            color: rgba(200, 168, 80, 0.4);
+        }
+
+        /* Scroll indicator */
+        .cover-scroll {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            color: rgba(200, 168, 80, 0.6);
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(8px);
+            }
+        }
+
+        /* Gear animations (kept for JS compat) */
+        .gear-svg {
+            animation: rotateCW 8s linear infinite;
+        }
+
+        .gear-svg-ccw {
+            animation: rotateCCW 6s linear infinite;
+        }
+
+        @keyframes rotateCW {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes rotateCCW {
+            to {
+                transform: rotate(-360deg);
+            }
+        }
+
+        /* ========== PAGINATED BOOK SYSTEM (3D Page Flip) ========== */
+        .book-wrapper {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            perspective: 2500px;
+        }
+
+        .book-page {
+            position: absolute;
+            inset: 0;
+            display: none;
+            transform-origin: left center;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            overflow: hidden;
+        }
+
+        .book-page.active {
+            display: block;
+            z-index: 5;
+            transform: rotateY(0deg);
+        }
+
+        /* Page behind (waiting to be revealed) */
+        .book-page.behind {
+            display: block;
+            z-index: 3;
+            transform: rotateY(0deg);
+        }
+
+        /* Flipping forward: current page rotates away */
+        .book-page.flip-forward {
+            display: block;
+            z-index: 10;
+            animation: flipForward 0.8s ease-in-out forwards;
+        }
+
+        /* Flipping backward: page comes back from left */
+        .book-page.flip-backward {
+            display: block;
+            z-index: 10;
+            animation: flipBackward 0.8s ease-in-out forwards;
+        }
+
+        @keyframes flipForward {
+            0% {
+                transform: rotateY(0deg);
+            }
+
+            100% {
+                transform: rotateY(-150deg);
+            }
+        }
+
+        @keyframes flipBackward {
+            0% {
+                transform: rotateY(-150deg);
+            }
+
+            100% {
+                transform: rotateY(0deg);
+            }
+        }
+
+        /* Shadow overlay that appears during flip for depth */
+        .flip-shadow {
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            pointer-events: none;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.12) 0%, transparent 40%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .flip-shadow.show {
+            opacity: 1;
+        }
+
+        /* Page edge styling during flip */
+        .book-page::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(0, 0, 0, 0.06), transparent);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .book-page.flip-forward::after {
+            opacity: 1;
+        }
+
+        /* Page navigation controls */
+        .page-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 0.6rem 1rem;
+            background: rgba(253, 246, 227, 0.96);
+            backdrop-filter: blur(12px);
+            border-top: 2px solid var(--notebook-line);
+            box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .page-nav .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1.2rem;
+            border: 2px solid #3a7ca5;
+            background: white;
+            color: #3a7ca5;
+            border-radius: 10px;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-nav .nav-btn:hover:not(:disabled) {
+            background: #3a7ca5;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(58, 124, 165, 0.3);
+        }
+
+        .page-nav .nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .page-nav .page-indicator {
+            font-family: var(--font-handwriting);
+            font-size: 1.1rem;
+            color: var(--ink-accent);
+            min-width: 90px;
+            text-align: center;
+        }
+
+        /* TOC dropdown */
+        .page-nav .toc-btn {
+            position: relative;
+        }
+
+        .toc-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 2px solid #3a7ca5;
+            border-radius: 12px;
+            padding: 0.5rem 0;
+            min-width: 240px;
+            box-shadow: 0 -6px 25px rgba(0, 0, 0, 0.15);
+            display: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-menu.show {
+            display: block;
+        }
+
+        .toc-menu a {
+            display: block;
+            padding: 0.45rem 1rem;
+            text-decoration: none;
+            color: var(--ink-color);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+
+        .toc-menu a:hover {
+            background: rgba(58, 124, 165, 0.1);
+        }
+
+        .toc-menu a.current {
+            color: #3a7ca5;
+            font-weight: 700;
+        }
+
+        /* ========== NOTEBOOK PAGE ========== */
+        .notebook-page-wrapper {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 1.5rem 1rem 4.5rem;
+            overflow-y: auto;
+        }
+
+        .notebook-page {
+            background: var(--notebook-bg);
+            border-radius: 4px 16px 16px 4px;
+            box-shadow: var(--paper-shadow), -4px 0 0 #d4c4a8, -6px 0 0 #c4b498;
+            padding: 2.5rem 2.5rem 2.5rem 4.5rem;
+            position: relative;
+            background-image:
+                repeating-linear-gradient(transparent, transparent 31px, var(--notebook-line) 31px, var(--notebook-line) 32px);
+            background-position: 0 2.5rem;
+            border-left: 3px solid var(--notebook-margin);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .notebook-page::before {
+            content: '';
+            position: absolute;
+            left: 3.5rem;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: var(--notebook-margin);
+            opacity: 0.5;
+        }
+
+        .notebook-page .holes {
+            position: absolute;
+            left: 0.6rem;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            pointer-events: none;
+        }
+
+        .notebook-page .holes span {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--notebook-bg);
+            border: 2px solid #b8a88a;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ========== TYPOGRAPHY ========== */
+        .page-title {
+            font-family: var(--font-handwriting);
+            font-size: 2.4rem;
+            color: var(--ink-title);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px dashed var(--notebook-line);
+            line-height: 1.3;
+        }
+
+        .section-title {
+            font-family: var(--font-handwriting);
+            font-size: 1.7rem;
+            color: var(--ink-accent);
+            margin: 1.5rem 0 0.8rem;
+        }
+
+        .notebook-page p,
+        .notebook-page li {
+            font-size: 1rem;
+            color: var(--ink-color);
+            margin-bottom: 0.6rem;
+        }
+
+        .notebook-page ul,
+        .notebook-page ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ========== SPECIAL BOXES ========== */
+        .concept-box {
+            background: rgba(15, 52, 96, 0.06);
+            border-left: 4px solid var(--ink-accent);
+            border-radius: 0 10px 10px 0;
+            padding: 1rem 1.2rem;
+            margin: 1.2rem 0;
+        }
+
+        .concept-box .box-title {
+            font-family: var(--font-handwriting);
+            font-size: 1.3rem;
+            color: var(--ink-accent);
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .highlight-box {
+            background: rgba(233, 69, 96, 0.07);
+            border-left: 4px solid var(--ink-highlight);
+            border-radius: 0 10px 10px 0;
+            padding: 1rem 1.2rem;
+            margin: 1.2rem 0;
+        }
+
+        .highlight-box .box-title {
+            font-family: var(--font-handwriting);
+            font-size: 1.3rem;
+            color: var(--ink-highlight);
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .example-box {
+            background: rgba(16, 185, 129, 0.07);
+            border-left: 4px solid #10b981;
+            border-radius: 0 10px 10px 0;
+            padding: 1rem 1.2rem;
+            margin: 1.2rem 0;
+        }
+
+        .example-box .box-title {
+            font-family: var(--font-handwriting);
+            font-size: 1.3rem;
+            color: #059669;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .math-display {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .diagram-container {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .diagram-container svg {
+            max-width: 100%;
+        }
+
+        .diagram-caption {
+            font-family: var(--font-handwriting);
+            font-size: 1rem;
+            color: #666;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .cover-notebook {
+                min-height: auto;
+                padding: 1.2rem;
+            }
+
+            .cover-physics {
+                min-height: 250px;
+            }
+
+            .notebook-page {
+                padding: 1.5rem 1.2rem 1.5rem 3rem;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .cover-formula {
+                display: none;
+            }
+
+            .page-nav .nav-btn span.btn-label {
+                display: none;
+            }
+
+            .toc-menu {
+                min-width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ==================== BOOK WRAPPER ==================== -->
+    <div class="book-wrapper" id="bookWrapper">
+
+        <!-- PAGE 0: COVER -->
+        <div class="book-page active" data-page="0">
+            <section class="cover-page" id="cover">
+                <div class="cover-notebook">
+                    <!-- Canvas subtle background animation -->
+                    <div class="cover-physics">
+                        <canvas id="coverCanvas"></canvas>
+                    </div>
+
+                    <!-- All visible cover content -->
+                    <div class="cover-content">
+                        <div class="cover-tag">Física · Universidad · 2026</div>
+
+                        <div class="cover-main">
+                            <div class="cover-edition">Tercer Año &mdash; Primer Semestre</div>
+
+                            <div class="cover-title-area">
+                                <h1 class="cover-title">Física III</h1>
+                                <p class="cover-subtitle">Movimiento Oscilatorio<br>y Armónico Simple</p>
+                            </div>
+
+                            <div class="cover-rule"></div>
+
+                            <p class="cover-blurb">
+                                Un tratamiento riguroso del movimiento armónico simple, péndulos, energía
+                                oscilatoria y sus aplicaciones en la física clásica y cuántica moderna.
+                                Con ejemplos resueltos y diagramas analíticos.
+                            </p>
+
+                            <div class="cover-authors">
+                                <span class="cover-authors-label">Autores</span>
+                                <div class="cover-authors-names">
+                                    Víctor Manuel González Vergara<br>
+                                    Andrés Jaramillo Ruiz<br>
+                                    Sergio Carmona Galvis
+                                </div>
+                            </div>
+
+                            <div class="cover-footer">
+                                <span class="cover-publisher">Física Aplicada &mdash; Notas de Cátedra</span>
+                                <span class="cover-year">2026</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cover-scroll" onclick="goToPage(1)">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+
+
+        <!-- PAGE 1: Introduction -->
+        <div class="book-page" data-page="1">
+            <div class="notebook-page-wrapper">
+                <article class="notebook-page" id="intro">
+                    <div class="holes"><span></span><span></span><span></span></div>
+                    <h1 class="page-title"><i class="fas fa-play-circle"></i> 1. Introducción al MAS</h1>
+                    <p>El <strong>Movimiento Armónico Simple (MAS)</strong> es uno de los movimientos periódicos más
+                        importantes
+                        en la física. Se presenta cuando un objeto oscila alrededor de una posición de equilibrio bajo
+                        la acción
+                        de una <em>fuerza restauradora</em> proporcional al desplazamiento.</p>
+
+                    <div class="concept-box">
+                        <div class="box-title"><i class="fas fa-lightbulb"></i> Concepto Clave</div>
+                        <p>Un movimiento es armónico simple cuando la fuerza neta sobre el objeto es directamente
+                            proporcional a
+                            su desplazamiento respecto al equilibrio y siempre apunta hacia dicho punto:</p>
+                        <div class="math-display">$$F = -kx$$</div>
+                        <p>donde $k$ es la constante de restitución y $x$ es el desplazamiento desde el equilibrio.</p>
+                    </div>
+
+                    <p>Este tipo de movimiento aparece en una gran variedad de sistemas físicos: resortes, péndulos
+                        (para
+                        ángulos pequeños), moléculas vibrando, circuitos eléctricos LC, cuerdas de instrumentos
+                        musicales y
+                        muchos más.</p>
+
+                    <h2 class="section-title">Características principales</h2>
+                    <ul>
+                        <li><strong>Periodicidad:</strong> el movimiento se repite a intervalos regulares de tiempo.
+                        </li>
+                        <li><strong>Simetría:</strong> el movimiento es simétrico respecto a la posición de equilibrio.
+                        </li>
+                        <li><strong>Fuerza restauradora:</strong> siempre apunta hacia el equilibrio.</li>
+                        <li><strong>Isocronismo:</strong> el periodo no depende de la amplitud (en el caso ideal).</li>
+                    </ul>
+                </article>
+            </div>
+        </div>
+
+        <!-- PAGE 2: Definition & Equation of Motion -->
+        <div class="book-page" data-page="2">
+            <div class="notebook-page-wrapper">
+                <article class="notebook-page" id="definicion">
+                    <div class="holes"><span></span><span></span><span></span></div>
+                    <h1 class="page-title"><i class="fas fa-square-root-variable"></i> 2. Ecuación del Movimiento</h1>
+
+                    <p>Aplicando la segunda ley de Newton $F = ma$ a la fuerza restauradora:</p>
+                    <div class="math-display">$$ma = -kx \quad \Rightarrow \quad m\frac{d^2x}{dt^2} = -kx$$</div>
+
+                    <p>Definiendo la <strong>frecuencia angular</strong> $\omega = \sqrt{k/m}$, obtenemos la ecuación
+                        diferencial del MAS:</p>
+                    <div class="math-display">$$\frac{d^2x}{dt^2} + \omega^2 x = 0$$</div>
+
+                    <div class="highlight-box">
+                        <div class="box-title"><i class="fas fa-star"></i> Solución General</div>
+                        <p>La solución general de esta ecuación diferencial es:</p>
+                        <div class="math-display">$$x(t) = A\cos(\omega t + \phi_0)$$</div>
+                        <p>donde:</p>
+                        <ul>
+                            <li>$A$ = <strong>Amplitud</strong> (desplazamiento máximo desde el equilibrio)</li>
+                            <li>$\omega$ = <strong>Frecuencia angular</strong> $= \sqrt{k/m}$ (en rad/s)</li>
+                            <li>$\phi_0$ = <strong>Fase inicial</strong> (depende de las condiciones iniciales)</li>
+                            <li>$(\omega t + \phi_0)$ = <strong>Fase</strong> del movimiento</li>
+                        </ul>
+                    </div>
+
+                    <h2 class="section-title">Velocidad y Aceleración</h2>
+                    <p>Derivando la posición:</p>
+                    <div class="math-display">$$v(t) = \frac{dx}{dt} = -A\omega\sin(\omega t + \phi_0)$$</div>
+                    <div class="math-display">$$a(t) = \frac{d^2x}{dt^2} = -A\omega^2\cos(\omega t + \phi_0) = -\omega^2
+                        x(t)$$
+                    </div>
+
+                    <div class="concept-box">
+                        <div class="box-title"><i class="fas fa-info-circle"></i> Valores Máximos</div>
+                        <ul>
+                            <li>Velocidad máxima: $v_{\max} = A\omega$ (en el equilibrio, $x=0$)</li>
+                            <li>Aceleración máxima: $a_{\max} = A\omega^2$ (en los extremos, $x=\pm A$)</li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- PAGE 3: Period, Frequency -->
+        <div class="book-page" data-page="3">
+            <div class="notebook-page-wrapper">
+                <article class="notebook-page" id="ecuaciones">
+                    <div class="holes"><span></span><span></span><span></span></div>
+                    <h1 class="page-title"><i class="fas fa-clock"></i> 3. Periodo y Frecuencia</h1>
+
+                    <p>Las magnitudes temporales del MAS están determinadas por las propiedades del sistema:</p>
+
+                    <div class="concept-box">
+                        <div class="box-title"><i class="fas fa-repeat"></i> Relaciones Fundamentales</div>
+                        <div class="math-display">$$T = \frac{2\pi}{\omega} = 2\pi\sqrt{\frac{m}{k}}$$</div>
+                        <div class="math-display">$$f = \frac{1}{T} = \frac{\omega}{2\pi} =
+                            \frac{1}{2\pi}\sqrt{\frac{k}{m}}$$
+                        </div>
+                        <div class="math-display">$$\omega = 2\pi f = \frac{2\pi}{T} = \sqrt{\frac{k}{m}}$$</div>
+                    </div>
+
+                    <p>donde $T$ es el <strong>periodo</strong> (tiempo de una oscilación completa), $f$ es la
+                        <strong>frecuencia</strong> (oscilaciones por segundo, en Hz) y $\omega$ la <strong>frecuencia
+                            angular</strong> (en rad/s).
+                    </p>
+
+                    <div class="highlight-box">
+                        <div class="box-title"><i class="fas fa-exclamation-triangle"></i> Nota Importante</div>
+                        <p>Obsérvese que el periodo $T$ y la frecuencia $f$ <strong>no dependen de la amplitud</strong>
+                            $A$.
+                            Esto se conoce como <strong>isocronismo</strong> y es una propiedad fundamental del MAS
+                            ideal.
+                            Galileo fue el primero en notar esta propiedad al observar las oscilaciones de las lámparas
+                            de la
+                            catedral de Pisa.</p>
+                    </div>
+
+                    <!-- SVG Diagram: sinusoidal -->
+                    <div class="diagram-container">
+                        <svg viewBox="0 0 500 200" width="480">
+                            <defs>
+                                <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#1a1a2e" />
+                                </marker>
+                            </defs>
+                            <!-- Axes -->
+                            <line x1="40" y1="100" x2="480" y2="100" stroke="#1a1a2e" stroke-width="1.5"
+                                marker-end="url(#arrowhead)" />
+                            <line x1="50" y1="185" x2="50" y2="15" stroke="#1a1a2e" stroke-width="1.5"
+                                marker-end="url(#arrowhead)" />
+                            <!-- Labels -->
+                            <text x="475" y="95" font-size="13" fill="#1a1a2e" font-family="Inter">t</text>
+                            <text x="55" y="22" font-size="13" fill="#1a1a2e" font-family="Inter">x(t)</text>
+                            <text x="20" y="42" font-size="11" fill="#e94560" font-family="Inter">A</text>
+                            <text x="15" y="165" font-size="11" fill="#e94560" font-family="Inter">−A</text>
+                            <!-- Amplitude lines -->
+                            <line x1="45" y1="35" x2="460" y2="35" stroke="#e94560" stroke-width="0.8"
+                                stroke-dasharray="5,4" />
+                            <line x1="45" y1="165" x2="460" y2="165" stroke="#e94560" stroke-width="0.8"
+                                stroke-dasharray="5,4" />
+                            <!-- Sine wave -->
+                            <path
+                                d="M50,35 Q110,35 155,100 Q200,165 245,165 Q290,165 335,100 Q380,35 425,35 Q445,35 460,65"
+                                fill="none" stroke="#0f3460" stroke-width="2.5" stroke-linecap="round" />
+                            <!-- Period bracket -->
+                            <line x1="50" y1="180" x2="245" y2="180" stroke="#059669" stroke-width="1.5" />
+                            <line x1="50" y1="175" x2="50" y2="185" stroke="#059669" stroke-width="1.5" />
+                            <line x1="245" y1="175" x2="245" y2="185" stroke="#059669" stroke-width="1.5" />
+                            <text x="125" y="195" font-size="12" fill="#059669" font-family="Inter"
+                                text-anchor="middle">T/2</text>
+                            <line x1="50" y1="12" x2="440" y2="12" stroke="#0f3460" stroke-width="1"
+                                stroke-dasharray="3,3" opacity="0.3" />
+                        </svg>
+                        <p class="diagram-caption">Figura 1: Gráfica de posición vs. tiempo en el MAS</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- PAGE 4: Energy -->
+        <div class="book-page" data-page="4">
+            <div class="notebook-page-wrapper">
+                <article class="notebook-page" id="energia">
+                    <div class="holes"><span></span><span></span><span></span></div>
+                    <h1 class="page-title"><i class="fas fa-bolt"></i> 4. Energía en el MAS</h1>
+
+                    <p>En el MAS se produce un intercambio continuo entre energía cinética y energía potencial elástica,
+                        mientras la energía mecánica total se <strong>conserva</strong>.</p>
+
+                    <h2 class="section-title">Energía Potencial Elástica</h2>
+                    <div class="math-display">$$U = \frac{1}{2}kx^2 = \frac{1}{2}kA^2\cos^2(\omega t + \phi_0)$$</div>
+
+                    <h2 class="section-title">Energía Cinética</h2>
+                    <div class="math-display">$$K = \frac{1}{2}mv^2 = \frac{1}{2}kA^2\sin^2(\omega t + \phi_0)$$</div>
+
+                    <h2 class="section-title">Energía Mecánica Total</h2>
+                    <div class="highlight-box">
+                        <div class="box-title"><i class="fas fa-equals"></i> Conservación de la Energía</div>
+                        <div class="math-display">$$E = K + U = \frac{1}{2}kA^2 = \text{constante}$$</div>
+                        <p>La energía total depende únicamente de la amplitud $A$ y la constante $k$ del resorte.</p>
+                    </div>
+
+                    <div class="concept-box">
+                        <div class="box-title"><i class="fas fa-exchange-alt"></i> Intercambio Energético</div>
+                        <ul>
+                            <li>En $x = 0$ (equilibrio): toda la energía es cinética → $K = E$, $U = 0$</li>
+                            <li>En $x = \pm A$ (extremos): toda la energía es potencial → $U = E$, $K = 0$</li>
+                            <li>La velocidad en función de la posición: $v = \omega\sqrt{A^2 - x^2}$</li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- PAGE 5: Examples -->
+        <div class="book-page" data-page="5">
+            <div class="notebook-page-wrapper">
+                <article class="notebook-page" id="ejemplos">
+                    <div class="holes"><span></span><span></span><span></span></div>
+                    <h1 class="page-title"><i class="fas fa-pencil-alt"></i> 5. Ejemplos Resueltos</h1>
+
+                    <div class="example-box">
+                        <div class="box-title"><i class="fas fa-calculator"></i> Ejemplo 1: Sistema masa-resorte</div>
+                        <p><strong>Problema:</strong> Un bloque de $m = 0{,}5$ kg está unido a un resorte de constante
+                            $k = 200$
+                            N/m. Se desplaza 4 cm desde el equilibrio y se suelta desde el reposo. Hallar: (a)
+                            frecuencia
+                            angular, (b) periodo, (c) velocidad máxima, (d) aceleración máxima.</p>
+                        <p><strong>Solución:</strong></p>
+                        <div class="math-display">$$\omega = \sqrt{\frac{k}{m}} = \sqrt{\frac{200}{0{,}5}} = 20 \text{
+                            rad/s}$$
+                        </div>
+                        <div class="math-display">$$T = \frac{2\pi}{\omega} = \frac{2\pi}{20} \approx 0{,}314 \text{
+                            s}$$</div>
+                        <div class="math-display">$$v_{\max} = A\omega = 0{,}04 \times 20 = 0{,}8 \text{ m/s}$$</div>
+                        <div class="math-display">$$a_{\max} = A\omega^2 = 0{,}04 \times 400 = 16 \text{ m/s}^2$$</div>
+                    </div>
+
+                    <div class="example-box">
+                        <div class="box-title"><i class="fas fa-calculator"></i> Ejemplo 2: Energía</div>
+                        <p><strong>Problema:</strong> Con los datos del ejemplo anterior, calcular la energía total y la
+                            velocidad cuando $x = 2$ cm.</p>
+                        <p><strong>Solución:</strong></p>
+                        <div class="math-display">$$E = \frac{1}{2}kA^2 = \frac{1}{2}(200)(0{,}04)^2 = 0{,}16 \text{
+                            J}$$</div>
+                        <div class="math-display">$$v = \omega\sqrt{A^2 - x^2} = 20\sqrt{(0{,}04)^2 - (0{,}02)^2}$$
+                        </div>
+                        <div class="math-display">$$v = 20\sqrt{0{,}0012} \approx 0{,}693 \text{ m/s}$$</div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- PAGE 6: Simple Pendulum -->
+        <div class="book-page" data-page="6">
+            <div class="notebook-page-wrapper">
+                <article class="notebook-page" id="pendulo">
+                    <div class="holes"><span></span><span></span><span></span></div>
+                    <h1 class="page-title"><i class="fas fa-arrows-alt-v"></i> 6. El Péndulo Simple</h1>
+
+                    <p>Un <strong>péndulo simple</strong> consiste en una masa $m$ (considerada puntual) suspendida de
+                        un hilo
+                        inextensible de longitud $L$. Para ángulos pequeños ($\theta \ll 1$ rad), el movimiento es
+                        armónico
+                        simple.</p>
+
+                    <div class="concept-box">
+                        <div class="box-title"><i class="fas fa-drafting-compass"></i> Deducción</div>
+                        <p>La componente tangencial de la fuerza restauradora es:</p>
+                        <div class="math-display">$$F_t = -mg\sin\theta \approx -mg\theta = -mg\frac{s}{L}$$</div>
+                        <p>donde $s = L\theta$ es el arco. Comparando con $F = -kx$, se identifica:</p>
+                        <div class="math-display">$$k_{\text{eff}} = \frac{mg}{L} \quad \Rightarrow \quad \omega =
+                            \sqrt{\frac{g}{L}}$$</div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <div class="box-title"><i class="fas fa-stopwatch"></i> Periodo del Péndulo Simple</div>
+                        <div class="math-display">$$T = 2\pi\sqrt{\frac{L}{g}}$$</div>
+                        <p>El periodo depende <strong>solo</strong> de la longitud $L$ y de la aceleración gravitacional
+                            $g$.
+                            ¡No depende de la masa ni de la amplitud (para ángulos pequeños)!</p>
+                    </div>
+
+                    <!-- Pendulum SVG -->
+                    <div class="diagram-container">
+                        <svg viewBox="0 0 300 250" width="280">
+                            <!-- Pivot -->
+                            <rect x="100" y="15" width="100" height="8" fill="#8a7e6b" rx="2" />
+                            <line x1="150" y1="23" x2="150" y2="23" stroke="#1a1a2e" stroke-width="2" />
+                            <!-- String at angle -->
+                            <line x1="150" y1="23" x2="105" y2="183" stroke="#1a1a2e" stroke-width="1.5"
+                                stroke-dasharray="4,3" />
+                            <!-- String vertical -->
+                            <line x1="150" y1="23" x2="150" y2="190" stroke="#999" stroke-width="1"
+                                stroke-dasharray="3,3" />
+                            <!-- Bob at angle -->
+                            <circle cx="105" cy="188" r="14" fill="#0f3460" stroke="#1a1a2e" stroke-width="1.5"
+                                opacity="0.5" />
+                            <!-- Bob at equilibrium -->
+                            <circle cx="150" cy="195" r="14" fill="#0f3460" stroke="#1a1a2e" stroke-width="1.5" />
+                            <!-- Angle arc -->
+                            <path d="M150,60 A40,40 0 0,0 133,55" fill="none" stroke="#e94560" stroke-width="1.5" />
+                            <text x="127" y="50" font-size="13" fill="#e94560" font-family="Inter">θ</text>
+                            <!-- L label -->
+                            <text x="155" y="110" font-size="12" fill="#666" font-family="Inter">L</text>
+                            <!-- mg arrow -->
+                            <line x1="150" y1="210" x2="150" y2="240" stroke="#059669" stroke-width="1.5"
+                                marker-end="url(#arrowhead)" />
+                            <text x="158" y="237" font-size="11" fill="#059669" font-family="Inter">mg</text>
+                        </svg>
+                        <p class="diagram-caption">Figura 2: Péndulo simple oscilando con ángulo θ</p>
+                    </div>
+
+                    <div class="example-box">
+                        <div class="box-title"><i class="fas fa-calculator"></i> Ejemplo 3: Péndulo</div>
+                        <p><strong>Problema:</strong> Un péndulo tiene una longitud de $L = 1$ m. Calcular su periodo en
+                            la
+                            superficie de la Tierra ($g = 9{,}8$ m/s²).</p>
+                        <div class="math-display">$$T = 2\pi\sqrt{\frac{1}{9{,}8}} = 2\pi\sqrt{0{,}1020} \approx 2{,}007
+                            \text{
+                            s}$$</div>
+                        <p>Un péndulo de 1 m tiene un periodo de aproximadamente 2 segundos — este fue el fundamento del
+                            <em>péndulo de segundos</em> utilizado históricamente en relojería.
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- PAGE 7: Applications -->
+        <div class="book-page" data-page="7">
+            <div class="notebook-page-wrapper">
+                <article class="notebook-page" id="aplicaciones">
+                    <div class="holes"><span></span><span></span><span></span></div>
+                    <h1 class="page-title"><i class="fas fa-cogs"></i> 7. Aplicaciones del MAS</h1>
+
+                    <p>El MAS no es solo un modelo teórico; tiene aplicaciones fundamentales en numerosas ramas de la
+                        ciencia y
+                        la tecnología:</p>
+
+                    <h2 class="section-title">En la vida cotidiana</h2>
+                    <ul>
+                        <li><strong>Relojes de péndulo:</strong> Galileo y Huygens desarrollaron los primeros relojes
+                            basados en
+                            el isocronismo del péndulo.</li>
+                        <li><strong>Amortiguadores de automóviles:</strong> sistemas masa-resorte que absorben
+                            vibraciones.</li>
+                        <li><strong>Instrumentos musicales:</strong> cuerdas, membranas y columnas de aire vibran en
+                            modos
+                            armónicos.</li>
+                    </ul>
+
+                    <h2 class="section-title">En la física y la ingeniería</h2>
+                    <ul>
+                        <li><strong>Circuitos LC:</strong> la carga $q(t)$ oscila armónicamente con $\omega =
+                            1/\sqrt{LC}$.</li>
+                        <li><strong>Cristalografía:</strong> vibraciones atómicas en redes cristalinas.</li>
+                        <li><strong>Mecánica cuántica:</strong> el oscilador armónico cuántico es fundamental para
+                            describir
+                            fonones, fotones y muchos sistemas cuánticos.</li>
+                        <li><strong>Sismología:</strong> sismógrafos que detectan ondas sísmicas mediante osciladores.
+                        </li>
+                    </ul>
+
+                    <div class="concept-box">
+                        <div class="box-title"><i class="fas fa-atom"></i> Conexión con la Mecánica Cuántica</div>
+                        <p>El oscilador armónico cuántico tiene niveles de energía discretos:</p>
+                        <div class="math-display">$$E_n = \hbar\omega\left(n + \frac{1}{2}\right), \quad n = 0, 1, 2,
+                            \ldots$$
+                        </div>
+                        <p>La energía del punto cero $E_0 = \frac{1}{2}\hbar\omega$ es una consecuencia del principio de
+                            incertidumbre de Heisenberg.</p>
+                    </div>
+
+                    <h2 class="section-title">Resumen de Fórmulas</h2>
+                    <div class="highlight-box">
+                        <div class="box-title"><i class="fas fa-list"></i> Formulario MAS</div>
+                        <div class="math-display">
+                            $$\begin{aligned}
+                            x(t) &= A\cos(\omega t + \phi_0) \\
+                            v(t) &= -A\omega\sin(\omega t + \phi_0) \\
+                            a(t) &= -A\omega^2\cos(\omega t + \phi_0) \\
+                            \omega &= \sqrt{\frac{k}{m}} = 2\pi f = \frac{2\pi}{T} \\
+                            T &= 2\pi\sqrt{\frac{m}{k}} \qquad T_{\text{péndulo}} = 2\pi\sqrt{\frac{L}{g}} \\
+                            E &= \frac{1}{2}kA^2 = K + U
+                            \end{aligned}$$
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+    </div><!-- end book-wrapper -->
+
+    <!-- ==================== PAGE NAVIGATION ==================== -->
+    <nav class="page-nav" id="pageNav">
+        <button class="nav-btn" id="prevBtn" onclick="prevPage()" disabled>
+            <i class="fas fa-chevron-left"></i> <span class="btn-label">Anterior</span>
+        </button>
+        <div class="toc-btn">
+            <button class="nav-btn" id="tocBtn" onclick="toggleToc()">
+                <i class="fas fa-list"></i> <span class="btn-label">Índice</span>
+            </button>
+            <div class="toc-menu" id="tocMenu">
+                <a href="#" onclick="goToPage(0);return false"><i class="fas fa-home"></i> Portada</a>
+                <a href="#" onclick="goToPage(1);return false">1. Introducción al MAS</a>
+                <a href="#" onclick="goToPage(2);return false">2. Ecuación del Movimiento</a>
+                <a href="#" onclick="goToPage(3);return false">3. Periodo y Frecuencia</a>
+                <a href="#" onclick="goToPage(4);return false">4. Energía en el MAS</a>
+                <a href="#" onclick="goToPage(5);return false">5. Ejemplos Resueltos</a>
+                <a href="#" onclick="goToPage(6);return false">6. El Péndulo Simple</a>
+                <a href="#" onclick="goToPage(7);return false">7. Aplicaciones del MAS</a>
+            </div>
+        </div>
+        <span class="page-indicator" id="pageIndicator">Portada</span>
+        <button class="nav-btn" id="nextBtn" onclick="nextPage()">
+            <span class="btn-label">Siguiente</span> <i class="fas fa-chevron-right"></i>
+        </button>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ===== COVER CANVAS ANIMATIONS (refined dark academic) =====
+            const canvas = document.getElementById('coverCanvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let W, H;
+                function resize() {
+                    const r = canvas.parentElement.getBoundingClientRect();
+                    const dpr = window.devicePixelRatio || 1;
+                    W = r.width; H = r.height;
+                    canvas.width = W * dpr; canvas.height = H * dpr;
+                    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                }
+                resize();
+                window.addEventListener('resize', resize);
+
+                let t = 0;
+                function animate() {
+                    t += 0.006;
+                    ctx.clearRect(0, 0, W, H);
+
+                    // === WAVE LAYERS — three slow sine waves in gold/cream ===
+                    const waves = [
+                        { amp: H * 0.10, freq: 2.2, speed: 1.0, yBase: H * 0.35, color: 'rgba(200,168,80,0.55)', lw: 1.8 },
+                        { amp: H * 0.07, freq: 3.1, speed: 1.6, yBase: H * 0.60, color: 'rgba(240,230,200,0.30)', lw: 1.1 },
+                        { amp: H * 0.05, freq: 1.6, speed: 0.7, yBase: H * 0.80, color: 'rgba(200,168,80,0.22)', lw: 0.9 },
+                    ];
+                    waves.forEach(w => {
+                        ctx.beginPath();
+                        for (let i = 0; i <= W; i++) {
+                            const y = w.yBase + Math.sin((i / W) * w.freq * Math.PI * 2 - t * w.speed) * w.amp;
+                            i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y);
+                        }
+                        ctx.strokeStyle = w.color;
+                        ctx.lineWidth = w.lw;
+                        ctx.stroke();
+                    });
+
+                    // === PENDULUM — top-right, gold glow ===
+                    const ppx = W * 0.88, ppy = H * 0.08;
+                    const pLen = Math.min(H * 0.22, 100);
+                    const pA = Math.sin(t * 1.4) * 0.38;
+                    const bbx = ppx + Math.sin(pA) * pLen;
+                    const bby = ppy + Math.cos(pA) * pLen;
+
+                    ctx.beginPath(); ctx.arc(ppx, ppy, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(200,168,80,0.6)'; ctx.fill();
+
+                    ctx.beginPath(); ctx.moveTo(ppx, ppy); ctx.lineTo(bbx, bby);
+                    ctx.strokeStyle = 'rgba(200,168,80,0.45)'; ctx.lineWidth = 1.2; ctx.stroke();
+
+                    const grd = ctx.createRadialGradient(bbx, bby, 0, bbx, bby, 10);
+                    grd.addColorStop(0, 'rgba(200,168,80,0.8)');
+                    grd.addColorStop(1, 'rgba(200,168,80,0)');
+                    ctx.beginPath(); ctx.arc(bbx, bby, 10, 0, Math.PI * 2);
+                    ctx.fillStyle = grd; ctx.fill();
+                    ctx.beginPath(); ctx.arc(bbx, bby, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(200,168,80,0.7)'; ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(ppx, ppy, pLen, Math.PI / 2 - 0.38, Math.PI / 2 + 0.38);
+                    ctx.strokeStyle = 'rgba(200,168,80,0.15)';
+                    ctx.lineWidth = 1; ctx.setLineDash([3, 5]); ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // === PHASE PORTRAIT — bottom-left ellipse ===
+                    const eex = W * 0.12, eey = H * 0.75, eRx = 55, eRy = 28;
+                    ctx.beginPath();
+                    ctx.ellipse(eex, eey, eRx, eRy, 0, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(200,168,80,0.18)'; ctx.lineWidth = 1; ctx.stroke();
+                    const ddx = eex + Math.cos(t * 2) * eRx;
+                    const ddy = eey + Math.sin(t * 2) * eRy;
+                    ctx.beginPath(); ctx.arc(ddx, ddy, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(200,168,80,0.5)'; ctx.fill();
+
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            }
+
+            // ===== SCROLL REVEAL =====
+            // (removed — now using paginated navigation)
+        });
+
+        // ===== PAGE NAVIGATION SYSTEM =====
+        const pageLabels = [
+            'Portada',
+            'Pág 1 · Introducción',
+            'Pág 2 · Ec. del Movimiento',
+            'Pág 3 · Periodo y Frecuencia',
+            'Pág 4 · Energía',
+            'Pág 5 · Ejemplos',
+            'Pág 6 · Péndulo Simple',
+            'Pág 7 · Aplicaciones'
+        ];
+        let currentPage = 0;
+        const totalPages = document.querySelectorAll('.book-page').length;
+        const allPages = document.querySelectorAll('.book-page');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const indicator = document.getElementById('pageIndicator');
+        const tocMenu = document.getElementById('tocMenu');
+
+        let isFlipping = false;
+        const flipShadow = document.createElement('div');
+        flipShadow.className = 'flip-shadow';
+        document.getElementById('bookWrapper').appendChild(flipShadow);
+
+        function goToPage(n) {
+            if (n < 0 || n >= totalPages || n === currentPage || isFlipping) return;
+            isFlipping = true;
+            const forward = n > currentPage;
+            const oldPage = allPages[currentPage];
+            const newPage = allPages[n];
+
+            // Show shadow during flip
+            flipShadow.classList.add('show');
+
+            if (forward) {
+                // Forward: current page flips away, new page is revealed behind
+                newPage.style.display = '';  // clear any inline override
+                newPage.classList.remove('active', 'flip-forward', 'flip-backward');
+                newPage.classList.add('behind');
+                oldPage.classList.remove('active');
+                oldPage.classList.add('flip-forward');
+
+                oldPage.addEventListener('animationend', function handler() {
+                    oldPage.removeEventListener('animationend', handler);
+                    oldPage.classList.remove('flip-forward');
+                    oldPage.style.display = '';
+                    newPage.classList.remove('behind');
+                    newPage.classList.add('active');
+                    flipShadow.classList.remove('show');
+                    isFlipping = false;
+                }, { once: true });
+            } else {
+                // Backward: the target page flips back into view from the left
+                oldPage.classList.remove('active');
+                oldPage.classList.add('behind');
+                newPage.style.display = '';  // clear any inline override
+                newPage.classList.remove('active', 'flip-forward', 'flip-backward');
+                newPage.classList.add('flip-backward');
+
+                newPage.addEventListener('animationend', function handler() {
+                    newPage.removeEventListener('animationend', handler);
+                    newPage.classList.remove('flip-backward');
+                    newPage.classList.add('active');
+                    oldPage.classList.remove('behind');
+                    oldPage.style.display = '';
+                    flipShadow.classList.remove('show');
+                    isFlipping = false;
+                }, { once: true });
+            }
+
+            currentPage = n;
+            updateNav();
+
+            // Scroll wrapper content to top
+            const wrapper = newPage.querySelector('.notebook-page-wrapper');
+            if (wrapper) wrapper.scrollTop = 0;
+
+            // Re-render KaTeX on the new page
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(newPage, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ]
+                });
+            }
+
+            // Close TOC
+            tocMenu.classList.remove('show');
+        }
+
+        function nextPage() { goToPage(currentPage + 1); }
+        function prevPage() { goToPage(currentPage - 1); }
+
+        function updateNav() {
+            prevBtn.disabled = currentPage === 0;
+            nextBtn.disabled = currentPage === totalPages - 1;
+            indicator.textContent = pageLabels[currentPage] || `Pág ${currentPage}`;
+
+            // Update TOC current highlight
+            const tocLinks = tocMenu.querySelectorAll('a');
+            tocLinks.forEach((a, i) => {
+                a.classList.toggle('current', i === currentPage);
+            });
+        }
+
+        function toggleToc() {
+            tocMenu.classList.toggle('show');
+        }
+
+        // Close TOC on click outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.toc-btn')) {
+                tocMenu.classList.remove('show');
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextPage(); }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevPage(); }
+            if (e.key === 'Home') { e.preventDefault(); goToPage(0); }
+            if (e.key === 'End') { e.preventDefault(); goToPage(totalPages - 1); }
+        });
+
+        // Initial state
+        updateNav();
+    </script>
+
+</body>
+
+</html>

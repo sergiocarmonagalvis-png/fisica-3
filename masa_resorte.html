@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoGebra Style: Masa-Resorte</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR (Controls & Graphs) */
+        .sidebar {
+            width: 420px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: #f1f5f9;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scrollable {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Controls */
+        .controls-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .slider-group {
+            margin-bottom: 15px;
+        }
+
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .slider-group input {
+            width: 100%;
+            accent-color: var(--primary);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: white;
+            transition: 0.2s;
+        }
+
+        .btn-play {
+            background: var(--success);
+        }
+
+        .btn-play.playing {
+            background: var(--danger);
+        }
+
+        .btn-reset {
+            background: var(--text-muted);
+        }
+
+        /* COLLAPSIBLE GRAPH PANELS */
+        .collapsible {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .collapsible-header {
+            padding: 12px 15px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            font-size: 14px;
+            border-bottom: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .collapsible-header:hover {
+            background: #f8fafc;
+        }
+
+        .collapsible.active .collapsible-header {
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+        }
+
+        .collapsible-header .chevron {
+            transition: transform 0.3s;
+        }
+
+        .collapsible.active .chevron {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            display: none;
+            padding: 5px;
+            background: white;
+        }
+
+        .collapsible.active .collapsible-content {
+            display: block;
+        }
+
+        .plot-container {
+            height: 250px;
+            width: 100%;
+        }
+
+        /* MODAL GRAPH */
+        .modal-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .modal-btn:hover {
+            background: #e2e8f0;
+            color: var(--primary);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 900px;
+            height: 80vh;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            flex: 1;
+            padding: 10px;
+            position: relative;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        /* MAIN SIMULATION AREA */
+        .main-area {
+            flex: 1;
+            position: relative;
+            background: #fff;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        /* FLOATING DATA PANEL */
+        .data-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            width: 250px;
+            pointer-events: none;
+        }
+
+        .data-panel h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .data-item {
+            text-align: center;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .data-item .label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .data-item .value {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums;
+            margin-top: 2px;
+        }
+
+        /* GeoGebra Style Grid for Plotly */
+        /* Configured inside JS */
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="header">
+            <h1><i data-lucide="activity"></i> Simulación: Masa-Resorte</h1>
+        </div>
+
+        <div class="scrollable">
+            <div class="controls-card">
+                <div class="btn-row">
+                    <button class="btn btn-play" id="btnPlay" onclick="toggleSim()">
+                        <i data-lucide="play" id="playIcon"></i> <span id="playText">Iniciar</span>
+                    </button>
+                    <button class="btn btn-reset" onclick="resetSim()">
+                        <i data-lucide="rotate-ccw"></i> Reset
+                    </button>
+                </div>
+
+                <div class="slider-group">
+                    <label>Constante Elástica (k) <span id="lblK">50 N/m</span></label>
+                    <input type="range" id="slK" min="10" max="200" value="50" oninput="updateParams()">
+                </div>
+
+                <div class="slider-group">
+                    <label>Masa (m) <span id="lblM">2.0 kg</span></label>
+                    <input type="range" id="slM" min="0.5" max="10" step="0.5" value="2" oninput="updateParams()">
+                </div>
+
+                <div class="slider-group">
+                    <label>Escala Vector Fuerza <span id="lblS">1.0x</span></label>
+                    <input type="range" id="slS" min="0.1" max="2" step="0.1" value="1.0" oninput="updateParams()">
+                </div>
+            </div>
+
+            <!-- COLLAPSIBLES (Geogebra Style) -->
+            <h3 style="font-size: 13px; color: #64748b; margin-bottom: 10px; text-transform: uppercase;">Gráficas
+                GeoGebra</h3>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCol(this)">
+                    <span>Posición (x) vs t</span>
+                    <div style="display:flex; align-items:center; gap: 5px;">
+                        <button class="modal-btn" onclick="openModal('plotX_modal', 'Posición', event)"
+                            title="Abrir en ventana modal"><i data-lucide="maximize-2" size="14"></i></button>
+                        <i data-lucide="chevron-down" class="chevron"></i>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <div id="plotX" class="plot-container"></div>
+                </div>
+            </div>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCol(this)">
+                    <span>Velocidad (v) vs t</span>
+                    <div style="display:flex; align-items:center; gap: 5px;">
+                        <button class="modal-btn" onclick="openModal('plotV_modal', 'Velocidad', event)"><i
+                                data-lucide="maximize-2" size="14"></i></button>
+                        <i data-lucide="chevron-down" class="chevron"></i>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <div id="plotV" class="plot-container"></div>
+                </div>
+            </div>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCol(this)">
+                    <span>Aceleración (a) vs t</span>
+                    <div style="display:flex; align-items:center; gap: 5px;">
+                        <button class="modal-btn" onclick="openModal('plotA_modal', 'Aceleración', event)"><i
+                                data-lucide="maximize-2" size="14"></i></button>
+                        <i data-lucide="chevron-down" class="chevron"></i>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <div id="plotA" class="plot-container"></div>
+                </div>
+            </div>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCol(this)">
+                    <span>Energía (K & U) vs t</span>
+                    <div style="display:flex; align-items:center; gap: 5px;">
+                        <button class="modal-btn" onclick="openModal('plotE_modal', 'Energías', event)"><i
+                                data-lucide="maximize-2" size="14"></i></button>
+                        <i data-lucide="chevron-down" class="chevron"></i>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <div id="plotE" class="plot-container"></div>
+                </div>
+            </div>
+
+        </div>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <main class="main-area">
+        <canvas id="canvas"></canvas>
+
+        <div class="data-panel">
+            <h3><i data-lucide="cpu" size="16"></i> Panel de Datos</h3>
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="label">x (m)</div>
+                    <div class="value" id="dx">0.00</div>
+                </div>
+                <div class="data-item">
+                    <div class="label">F (N)</div>
+                    <div class="value" id="df" style="color:var(--danger)">0.00</div>
+                </div>
+                <div class="data-item">
+                    <div class="label">v (m/s)</div>
+                    <div class="value" id="dv" style="color:var(--success)">0.00</div>
+                </div>
+                <div class="data-item">
+                    <div class="label">a (m/s²)</div>
+                    <div class="value" id="da" style="color:#d97706">0.00</div>
+                </div>
+                <div class="data-item">
+                    <div class="label">K (J)</div>
+                    <div class="value" id="dk" style="color:#8b5cf6">0.00</div>
+                </div>
+                <div class="data-item">
+                    <div class="label">U (J)</div>
+                    <div class="value" id="du" style="color:#eab308">0.00</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL WINDOW -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle" style="font-size:16px;">Gráfica Detallada</h3>
+                <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <!-- Un contenedor donde se moverá dinámicamente el plotly en vez de recrearlo o clonarlo -->
+                <div id="modalPlotTarget" style="width:100%; height:100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // ----------------- FÍSICA Y ESTADO -----------------
+        let state = {
+            isPlaying: false,
+            t: 0, x: 0, v: 0, a: 0,
+            k: 50, m: 2, scaleF: 1.0,
+            dt: 0.016, // ~60fps
+        };
+        const PPM = 100; // Pixels per meter
+
+        // ----------------- EVENTOS COLAPSABLES Y MODAL ----------------
+        function toggleCol(header) {
+            const parent = header.parentElement;
+            parent.classList.toggle('active');
+            // Trigger Plotly resize when opened
+            if (parent.classList.contains('active')) {
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+            }
+        }
+
+        let currentActiveModalPlotId = null;
+        let originalPlotParent = null;
+
+        function openModal(id, title, event) {
+            event.stopPropagation(); // Evitar toggle en collapsible
+            document.getElementById('modalTitle').innerText = title + " vs Tiempo - Estilo GeoGebra";
+            document.getElementById('modalOverlay').classList.add('active');
+
+            // Movemos el div original de plotly a modal
+            const plotDivId = id.replace('_modal', '');
+            const plotEl = document.getElementById(plotDivId);
+            originalPlotParent = plotEl.parentElement;
+            document.getElementById('modalPlotTarget').appendChild(plotEl);
+
+            // Ajustar alto
+            plotEl.style.height = "100%";
+            currentActiveModalPlotId = plotEl;
+
+            setTimeout(() => { Plotly.Plots.resize(plotEl); }, 100);
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            if (currentActiveModalPlotId && originalPlotParent) {
+                // Return to sidebar
+                currentActiveModalPlotId.style.height = "250px";
+                originalPlotParent.appendChild(currentActiveModalPlotId);
+                setTimeout(() => { Plotly.Plots.resize(currentActiveModalPlotId); }, 100);
+            }
+            currentActiveModalPlotId = null;
+            originalPlotParent = null;
+        }
+
+        // ----------------- PLOTLY (ESTILO GEOGEBRA) -----------------
+        const geogebraLayout = {
+            paper_bgcolor: 'white',
+            plot_bgcolor: 'white',
+            margin: { l: 40, r: 20, t: 30, b: 40 },
+            dragmode: 'pan', // Por defecto grabber
+            xaxis: {
+                title: { text: 't (s)', font: { size: 12, color: '#333' } },
+                zeroline: true, zerolinewidth: 2, zerolinecolor: '#000',
+                gridcolor: '#e0e0e0', gridwidth: 1,
+                minor: { ticklen: 4, gridcolor: '#f0f0f0', gridwidth: 1 },
+                tickcolor: '#333', tickwidth: 2, ticklen: 6,
+                automargin: true,
+                fixedrange: false
+            },
+            yaxis: {
+                zeroline: true, zerolinewidth: 2, zerolinecolor: '#000',
+                gridcolor: '#e0e0e0', gridwidth: 1,
+                minor: { ticklen: 4, gridcolor: '#f0f0f0', gridwidth: 1 },
+                tickcolor: '#333', tickwidth: 2, ticklen: 6,
+                automargin: true,
+                fixedrange: false
+            },
+            showlegend: false
+        };
+
+        const configGeo = {
+            responsive: true,
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+            scrollZoom: true // Papel milimetrado interactivo (scroll wheel = zoom)
+        };
+
+        Plotly.newPlot('plotX', [{ x: [], y: [], mode: 'lines', line: { color: '#2563eb', width: 2 } }], { ...geogebraLayout, yaxis: { ...geogebraLayout.yaxis, title: 'x (m)' } }, configGeo);
+        Plotly.newPlot('plotV', [{ x: [], y: [], mode: 'lines', line: { color: '#16a34a', width: 2 } }], { ...geogebraLayout, yaxis: { ...geogebraLayout.yaxis, title: 'v (m/s)' } }, configGeo);
+        Plotly.newPlot('plotA', [{ x: [], y: [], mode: 'lines', line: { color: '#dc2626', width: 2 } }], { ...geogebraLayout, yaxis: { ...geogebraLayout.yaxis, title: 'a (m/s²)' } }, configGeo);
+        Plotly.newPlot('plotE', [
+            { x: [], y: [], mode: 'lines', line: { color: '#eab308', width: 2 }, name: 'U' },
+            { x: [], y: [], mode: 'lines', line: { color: '#8b5cf6', width: 2, dash: 'dot' }, name: 'K' }
+        ], { ...geogebraLayout, showlegend: true, legend: { x: 0, y: 1 }, yaxis: { ...geogebraLayout.yaxis, title: 'Energía (J)' } }, configGeo);
+
+        let plotTimer = 0;
+        const maxDataPts = 500;
+
+        function updatePlots() {
+            plotTimer += state.dt;
+            if (plotTimer >= 0.05) { // update charts ~20fps
+                plotTimer = 0;
+                let u = 0.5 * state.k * state.x * state.x;
+                let k = 0.5 * state.m * state.v * state.v;
+
+                Plotly.extendTraces('plotX', { x: [[state.t]], y: [[state.x]] }, [0], maxDataPts);
+                Plotly.extendTraces('plotV', { x: [[state.t]], y: [[state.v]] }, [0], maxDataPts);
+                Plotly.extendTraces('plotA', { x: [[state.t]], y: [[state.a]] }, [0], maxDataPts);
+                Plotly.extendTraces('plotE', { x: [[state.t], [state.t]], y: [[u], [k]] }, [0, 1], maxDataPts);
+            }
+        }
+
+        // ----------------- CONTROLES E INTERFAZ -----------------
+        function updateParams() {
+            state.k = parseFloat(document.getElementById('slK').value);
+            state.m = parseFloat(document.getElementById('slM').value);
+            state.scaleF = parseFloat(document.getElementById('slS').value);
+
+            document.getElementById('lblK').innerText = state.k + " N/m";
+            document.getElementById('lblM').innerText = state.m.toFixed(1) + " kg";
+            document.getElementById('lblS').innerText = state.scaleF.toFixed(1) + "x";
+
+            // Si está pausado actualiza valores panel
+            if (!state.isPlaying) updatePanel();
+        }
+
+        function toggleSim() {
+            state.isPlaying = !state.isPlaying;
+            const btn = document.getElementById('btnPlay');
+            if (state.isPlaying) {
+                btn.classList.add('playing');
+                document.getElementById('playText').innerText = 'Pausar';
+                document.getElementById('playIcon').setAttribute('data-lucide', 'pause');
+            } else {
+                btn.classList.remove('playing');
+                document.getElementById('playText').innerText = 'Reanudar';
+                document.getElementById('playIcon').setAttribute('data-lucide', 'play');
+            }
+            lucide.createIcons();
+            if (state.isPlaying) requestAnimationFrame(mainLoop);
+        }
+
+        function resetSim() {
+            state.isPlaying = false;
+            state.t = 0; state.x = 0; state.v = 0; state.a = 0;
+
+            const btn = document.getElementById('btnPlay');
+            btn.classList.remove('playing');
+            document.getElementById('playText').innerText = 'Iniciar';
+            document.getElementById('playIcon').setAttribute('data-lucide', 'play');
+            lucide.createIcons();
+
+            updateParams();
+            updatePanel();
+            drawFrame(); // Draw reset state
+
+            // Clear plots
+            ['plotX', 'plotV', 'plotA'].forEach(id => Plotly.update(id, { x: [[]], y: [[]] }));
+            Plotly.update('plotE', { x: [[], []], y: [[], []] });
+        }
+
+        function updatePanel() {
+            let f = -state.k * state.x;
+            let u = 0.5 * state.k * state.x * state.x;
+            let k = 0.5 * state.m * state.v * state.v;
+            state.a = f / state.m; // ensure sync
+
+            document.getElementById('dx').innerText = state.x.toFixed(2);
+            document.getElementById('df').innerText = f.toFixed(1);
+            document.getElementById('dv').innerText = state.v.toFixed(2);
+            document.getElementById('da').innerText = state.a.toFixed(2);
+            document.getElementById('dk').innerText = k.toFixed(1);
+            document.getElementById('du').innerText = u.toFixed(1);
+        }
+
+        // ----------------- CANVAS DRAW & DRAG -----------------
+        const cvs = document.getElementById('canvas');
+        const ctx = cvs.getContext('2d');
+        let cx, cy;
+        let isDragging = false;
+        const bw = 80, bh = 80;
+
+        function resize() {
+            cvs.width = cvs.parentElement.clientWidth;
+            cvs.height = cvs.parentElement.clientHeight;
+            cx = cvs.width / 2;
+            cy = cvs.height / 2 + 50;
+            drawFrame();
+        }
+        window.addEventListener('resize', resize);
+
+        cvs.addEventListener('mousedown', (e) => {
+            const rect = cvs.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            let bx = cx + (state.x * PPM);
+            if (mx >= bx - bw / 2 && mx <= bx + bw / 2 && my >= cy - bh && my <= cy) {
+                isDragging = true;
+                if (state.isPlaying) toggleSim();
+            }
+        });
+
+        cvs.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = cvs.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+
+            let realX = (mx - cx) / PPM;
+            const wallBoundary = - (cx - 100) / PPM; // No pasar pared
+            state.x = Math.max(wallBoundary + (bw / 2 / PPM), realX);
+            state.v = 0; // stop
+            updatePanel();
+            drawFrame();
+        });
+
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        // Render routine
+        function drawFrame() {
+            ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+            const wallX = 100;
+
+            // Suelo y Pared
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(0, cy, cvs.width, cvs.height - cy);
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(wallX - 20, cy - 150, 20, 150);
+
+            // Textura pared
+            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
+            for (let y = cy - 140; y < cy; y += 10) { ctx.beginPath(); ctx.moveTo(wallX - 20, y); ctx.lineTo(wallX, y + 10); ctx.stroke(); }
+
+            // Eje de reposo x=0
+            ctx.strokeStyle = '#64748b'; ctx.setLineDash([5, 5]);
+            ctx.beginPath(); ctx.moveTo(cx, cy - 150); ctx.lineTo(cx, cy + 50); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#64748b'; ctx.font = '12px Roboto'; ctx.fillText('x = 0', cx - 12, cy + 20);
+
+            // Resorte
+            let bx = cx + (state.x * PPM);
+            drawSpring(wallX, bx - bw / 2, cy - bh / 2);
+
+            // Bloque
+            ctx.fillStyle = isDragging ? '#60a5fa' : '#2563eb';
+            ctx.fillRect(bx - bw / 2, cy - bh, bw, bh);
+            ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = 2;
+            ctx.strokeRect(bx - bw / 2, cy - bh, bw, bh);
+            ctx.fillStyle = 'white'; ctx.font = 'bold 16px Roboto'; ctx.textAlign = 'center';
+            ctx.fillText(state.m.toFixed(1) + "kg", bx, cy - bh / 2 + 5);
+
+            // Vector Fuerza
+            let force = -state.k * state.x;
+            if (Math.abs(force) > 0.5) {
+                let vLen = force * state.scaleF;
+                ctx.strokeStyle = '#dc2626'; ctx.fillStyle = '#dc2626'; ctx.lineWidth = 3;
+                let sy = cy - bh - 15;
+                ctx.beginPath(); ctx.moveTo(bx, sy); ctx.lineTo(bx + vLen, sy); ctx.stroke();
+
+                // Punta flecha
+                ctx.beginPath();
+                if (force > 0) {
+                    ctx.moveTo(bx + vLen, sy); ctx.lineTo(bx + vLen - 10, sy - 6); ctx.lineTo(bx + vLen - 10, sy + 6);
+                } else {
+                    ctx.moveTo(bx + vLen, sy); ctx.lineTo(bx + vLen + 10, sy - 6); ctx.lineTo(bx + vLen + 10, sy + 6);
+                }
+                ctx.fill();
+                ctx.font = 'bold 14px Roboto'; ctx.textAlign = force > 0 ? 'left' : 'right';
+                ctx.fillText("F", bx + vLen + (force > 0 ? 5 : -5), sy - 5);
+            }
+        }
+
+        function drawSpring(x1, x2, y) {
+            ctx.strokeStyle = '#475569'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+            let coils = 12; let L = x2 - x1; let step = L / coils;
+
+            ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1 + step / 2, y);
+            for (let i = 1; i < coils; i++) {
+                ctx.lineTo(x1 + step / 2 + step * i, y + (i % 2 === 0 ? 20 : -20));
+            }
+            ctx.lineTo(x2 - step / 2, y); ctx.lineTo(x2, y); ctx.stroke();
+        }
+
+        // Euler-Cromer Engine
+        function mainLoop() {
+            if (!state.isPlaying) return;
+
+            state.a = (-state.k * state.x) / state.m;
+            state.v += state.a * state.dt;
+            state.x += state.v * state.dt;
+            state.t += state.dt;
+
+            updatePlots();
+            updatePanel();
+            drawFrame();
+
+            requestAnimationFrame(mainLoop);
+        }
+
+        // Init
+        setTimeout(() => { resize(); resetSim(); }, 100);
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laboratorio Virtual de Física III | Libro Interactivo</title>
+
+    <!-- ================================================== -->
+    <!-- 📚 SECCIÓN: LIBRERÍAS (CDN) -->
+    <!-- ================================================== -->
+    <script>window.PlotlyConfig = { MathJaxConfig: 'local' };</script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' } };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@500;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- ================================================== -->
+    <!-- 🎨 SECCIÓN: ESTILOS CSS AVANZADOS (GLASSMORPHISM) -->
+    <!-- ================================================== -->
+    <style>
+        :root {
+            /* Temática Light por defecto, usaremos variables que rotarán */
+            --bg: #f8fafc;
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            --bg-panel: rgba(255, 255, 255, 0.85);
+            --border: rgba(15, 23, 42, 0.1);
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent: #0ea5e9;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+
+            --kin: #10b981;
+            --pot: #0ea5e9;
+            --tot: #f59e0b;
+
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+
+            --font-ui: 'Inter', sans-serif;
+            --font-math: 'JetBrains Mono', monospace;
+            --font-title: 'Outfit', sans-serif;
+        }
+
+        /* Dark Mode Theme */
+        html.dark {
+            --bg: #09090b;
+            --bg-glass: rgba(9, 9, 11, 0.7);
+            --bg-panel: rgba(24, 24, 27, 0.8);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --accent: #38bdf8;
+
+            --kin: #34d399;
+            --pot: #38bdf8;
+            --tot: #fbbf24;
+
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.8);
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.8);
+            --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-ui);
+            background-color: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            /* Evitar scroll general, usar grids */
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
+
+            /* Aurora Background Base */
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.15), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(14, 165, 233, 0.15), transparent 40%),
+                radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.1), transparent 40%);
+        }
+
+        /* ================================================== */
+        /* UI: NAVBAR & FULLSCREEN */
+        /* ================================================== */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: var(--font-title);
+            font-weight: 900;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand i {
+            color: var(--primary);
+            -webkit-text-fill-color: initial;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 99px;
+            box-shadow: var(--shadow-inner);
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 14px;
+            width: 200px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-panel);
+            color: var(--text);
+            border-color: var(--border);
+        }
+
+        /* ================================================== */
+        /* UI: LAYOUT PRINCIPAL (SIDEBAR + MAIN) */
+        /* ================================================== */
+        .app-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            flex: 1;
+            height: calc(100vh - 65px);
+            /* Header height */
+        }
+
+        .sidebar {
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .chapter-item {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chapter-item:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .chapter-item.active {
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .chapter-num {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: grid;
+            place-items: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* MAIN CONTENT SPLIT */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 4fr 5fr;
+            /* Libro (Izquierda) | Laboratorio (Derecha) */
+            overflow: hidden;
+        }
+
+        /* SECTION: LIBRO (Teoría) */
+        .book-section {
+            padding: 40px;
+            overflow-y: auto;
+            background: var(--bg);
+            border-right: 1px solid var(--border);
+            line-height: 1.7;
+        }
+
+        .book-section h1 {
+            font-family: var(--font-title);
+            font-size: 36px;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .book-section h2 {
+            font-family: var(--font-title);
+            font-size: 24px;
+            margin: 32px 0 16px;
+            color: var(--primary);
+        }
+
+        .book-section p {
+            margin-bottom: 20px;
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        .math-block {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+            box-shadow: var(--shadow-sm);
+            overflow-x: auto;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 12px;
+            margin: 24px 0;
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--text);
+        }
+
+        .alert i {
+            color: var(--success);
+        }
+
+        /* SECTION: LABORATORIO (Simulación + Gráficos) */
+        .lab-section {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            position: relative;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            /* Mitad superior */
+            min-height: 350px;
+            background: #000;
+            /* Siempre oscuro para simulaciones físicas */
+            position: relative;
+            border-bottom: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Sim Toolbar (Overlay) */
+        .sim-toolbar {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+            pointer-events: none;
+            /* Dejar pasar clics al canvas */
+        }
+
+        .sim-toolbar>* {
+            pointer-events: auto;
+        }
+
+        .sim-data-hud {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: #fff;
+            font-family: var(--font-math);
+            display: flex;
+            gap: 24px;
+            text-shadow: 0 1px 2px #000;
+        }
+
+        .hud-val {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hud-lbl {
+            font-size: 10px;
+            color: #a1a1aa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hud-num {
+            font-size: 16px;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        /* Controles GeoGebra flotantes */
+        .geo-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .geo-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .geo-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* PLOTLY CONTAINER */
+        .plot-wrapper {
+            flex: 1;
+            /* Mitad inferior */
+            min-height: 300px;
+            padding: 12px;
+            background: var(--bg);
+            position: relative;
+        }
+
+        #plot {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* CONTROLES (Bottom Panel) */
+        .controls-panel {
+            padding: 24px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            z-index: 20;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            text-transform: uppercase;
+        }
+
+        .control-group label span {
+            font-family: var(--font-math);
+            color: var(--primary);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            appearance: none;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .sim-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-family: var(--font-ui);
+        }
+
+        .btn-play {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-play:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-pause {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-sec {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-sec:hover {
+            background: var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .book-section {
+                height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            /* Ocultar sidebar en móvil por ahora */
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================================================== -->
+    <!-- 🖥️ NAV BAR -->
+    <!-- ================================================== -->
+    <header>
+        <div class="brand">
+            <i data-lucide="atom"></i>
+            Física III Interactiva
+        </div>
+
+        <div class="nav-controls">
+            <div class="search-box">
+                <i data-lucide="search" size="16" color="var(--text-muted)"></i>
+                <input type="text" placeholder="Buscar concepto o teorema...">
+            </div>
+            <button class="icon-btn" onclick="toggleTheme()" title="Cambiar Tema"><i id="theme-icon"
+                    data-lucide="sun"></i></button>
+            <button class="icon-btn" onclick="toggleFullscreen()" title="Pantalla Completa"><i
+                    data-lucide="maximize"></i></button>
+            <button class="icon-btn" title="Configuraciones"><i data-lucide="settings"></i></button>
+        </div>
+    </header>
+
+    <!-- ================================================== -->
+    <!-- 🗂️ LAYOUT PRINCIPAL -->
+    <!-- ================================================== -->
+    <div class="app-container">
+
+        <!-- SIDEBAR CAPÍTULOS -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Generado dinámicamente por JS -->
+        </aside>
+
+        <!-- CONTENT GRID -->
+        <main class="main-grid">
+
+            <!-- LIBRO (TEORÍA Y MATEMÁTICAS) -->
+            <section class="book-section" id="book-content">
+                <!-- Generado dinámicamente -->
+                <div style="display:flex; justify-content:center; align-items:center; height:100%;">
+                    <div style="text-align:center; color:var(--text-muted);">
+                        <i data-lucide="loader-2" class="spin" style="animation: spin 2s linear infinite;"></i>
+                        <p style="margin-top:10px;">Cargando motor de física diferencial...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LABORATORIO VIRTUAL -->
+            <section class="lab-section">
+
+                <div class="canvas-wrapper" id="canvas-container">
+                    <div class="sim-toolbar">
+                        <div class="sim-data-hud" id="hud-data">
+                            <!-- Datos telemetry inyectados con JS -->
+                        </div>
+                        <!-- Herramientas tipo GeoGebra -->
+                        <div class="geo-controls">
+                            <button class="geo-btn" onclick="sim.camera.zoom(1.2)" title="Zoom In"><i
+                                    data-lucide="zoom-in" size="18"></i></button>
+                            <button class="geo-btn" onclick="sim.camera.zoom(1/1.2)" title="Zoom Out"><i
+                                    data-lucide="zoom-out" size="18"></i></button>
+                            <button class="geo-btn" onclick="sim.camera.reset()" title="Restablecer Vista"><i
+                                    data-lucide="focus" size="18"></i></button>
+                        </div>
+                    </div>
+                    <canvas id="simCanvas"></canvas>
+                </div>
+
+                <div class="plot-wrapper">
+                    <div id="plot"></div>
+                </div>
+
+                <div class="controls-panel">
+                    <div class="controls-grid" id="sim-controls">
+                        <!-- Sliders dinámicos aquí -->
+                    </div>
+                    <div class="sim-actions">
+                        <button class="btn btn-play" id="btn-toggle" onclick="engine.toggle()">
+                            <i data-lucide="play" id="icon-toggle"></i> <span id="lbl-toggle">Iniciar Simulación</span>
+                        </button>
+                        <button class="btn btn-sec" onclick="engine.reset()">
+                            <i data-lucide="rotate-ccw"></i> Reiniciar
+                        </button>
+                        <button class="btn btn-sec" onclick="plotSystem.clear()">
+                            <i data-lucide="trash-2"></i> Limpiar Gráfico
+                        </button>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- ⚙️ CÓDIGO FUENTE JAVASCRIPT: MOTOR FÍSICO Y UI -->
+    <!-- ================================================== -->
+    <script>
+        // Inicializar Lucide Icons
+        lucide.createIcons();
+        const $ = id => document.getElementById(id);
+
+        // Utilidades Globales
+        function format(num, dec = 2) { return Number(num).toFixed(dec); }
+
+        // ==================================================
+        // 🎨 UI & THEME LOGIC
+        // ==================================================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = $('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.setAttribute('data-lucide', 'moon');
+            } else {
+                html.classList.add('dark');
+                icon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons();
+            updatePlotLayout();
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function getVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+        // ==================================================
+        // 📊 PLOTLY PLOTTER (GeoGebra Style)
+        // ==================================================
+        const plotSystem = {
+            ready: false,
+            maxPts: 500,
+            t: [], d1: [], d2: [], d3: [],
+
+            init(title1, title2, title3) {
+                this.t = []; this.d1 = []; this.d2 = []; this.d3 = [];
+
+                const isDark = document.documentElement.classList.contains('dark');
+                const gridColor = isDark ? '#27272a' : '#e2e8f0';
+                const textColor = isDark ? '#a1a1aa' : '#64748b';
+                const bg = 'transparent';
+
+                const traces = [
+                    { x: this.t, y: this.d1, mode: 'lines', name: title1, line: { color: getVar('--kin'), width: 2.5 } },
+                    { x: this.t, y: this.d2, mode: 'lines', name: title2, line: { color: getVar('--pot'), width: 2.5 } }
+                ];
+                if (title3) traces.push({ x: this.t, y: this.d3, mode: 'lines', name: title3, line: { color: getVar('--tot'), width: 2.5, dash: 'dot' } });
+
+                const layout = {
+                    paper_bgcolor: bg, plot_bgcolor: bg,
+                    margin: { l: 50, r: 20, t: 20, b: 40 },
+                    dragmode: 'pan', // Default GeoGebra style interaction
+                    xaxis: {
+                        title: { text: 't (s)', font: { size: 12, color: textColor, family: 'Inter' } },
+                        gridcolor: gridColor, zerolinecolor: textColor, zerolinewidth: 2,
+                        minor: { ticklen: 4, gridcolor: gridColor }, fixedrange: false
+                    },
+                    yaxis: {
+                        title: { text: 'Magnitud', font: { size: 12, color: textColor, family: 'Inter' } },
+                        gridcolor: gridColor, zerolinecolor: textColor, zerolinewidth: 2,
+                        minor: { ticklen: 4, gridcolor: gridColor }, fixedrange: false
+                    },
+                    legend: { orientation: 'h', x: 0, y: 1.15, font: { color: textColor, family: 'Inter' } },
+                    uirevision: 'true'
+                };
+
+                const config = { responsive: true, displayModeBar: true, displaylogo: false, scrollZoom: true, modeBarButtonsToRemove: ['lasso2d', 'select2d'] };
+
+                Plotly.newPlot('plot', traces, layout, config);
+                this.ready = true;
+            },
+
+            clear() {
+                this.t.length = this.d1.length = this.d2.length = this.d3.length = 0;
+                Plotly.update('plot', { x: [[], [], []], y: [[], [], []] });
+            },
+
+            push(t, v1, v2, v3 = null) {
+                if (!this.ready) return;
+                this.t.push(t); this.d1.push(v1); this.d2.push(v2); if (v3 !== null) this.d3.push(v3);
+
+                if (this.t.length > this.maxPts) {
+                    this.t.shift(); this.d1.shift(); this.d2.shift(); if (v3 !== null) this.d3.shift();
+                }
+
+                let updates = { x: [this.t, this.t], y: [this.d1, this.d2] };
+                if (v3 !== null) { updates.x.push(this.t); updates.y.push(this.d3); }
+
+                // Optimize: only update DOM every few frames, Plotly handles arrays fine, but DOM calls are slow
+                // We will call Plotly.update sparingly in the main loop or use extendTraces
+            },
+
+            flashUpdate(useV3) {
+                if (!this.ready) return;
+                let traces = useV3 ? [0, 1, 2] : [0, 1];
+                Plotly.update('plot', {
+                    x: useV3 ? [this.t, this.t, this.t] : [this.t, this.t],
+                    y: useV3 ? [this.d1, this.d2, this.d3] : [this.d1, this.d2]
+                });
+            }
+        };
+
+        function updatePlotLayout() {
+            if (!plotSystem.ready) return;
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? '#27272a' : '#e2e8f0';
+            const textColor = isDark ? '#a1a1aa' : '#64748b';
+            Plotly.relayout('plot', {
+                'xaxis.gridcolor': gridColor, 'xaxis.zerolinecolor': textColor, 'xaxis.title.font.color': textColor,
+                'yaxis.gridcolor': gridColor, 'yaxis.zerolinecolor': textColor, 'yaxis.title.font.color': textColor,
+                'legend.font.color': textColor
+            });
+        }
+
+        // ==================================================
+        // ⚙️ MOTOR DE FÍSICA (CORE ENGINE)
+        // ==================================================
+        const engine = {
+            run: false,
+            lastTime: 0,
+            t: 0,
+            dt: 1 / 60, // Fixed physical step for accuracy (Euler-Cromer)
+
+            // Virtual instance active
+            activeSim: null,
+
+            toggle() {
+                this.run = !this.run;
+                const btn = $('btn-toggle');
+                const icon = $('icon-toggle');
+                const lbl = $('lbl-toggle');
+
+                if (this.run) {
+                    btn.className = 'btn btn-pause';
+                    icon.setAttribute('data-lucide', 'pause');
+                    lbl.innerText = "Pausar Simulación";
+                    this.lastTime = performance.now();
+                    requestAnimationFrame(loop);
+                } else {
+                    btn.className = 'btn btn-play';
+                    icon.setAttribute('data-lucide', 'play');
+                    lbl.innerText = "Reanudar Simulación";
+                }
+                lucide.createIcons();
+            },
+
+            reset() {
+                this.run = false;
+                this.t = 0;
+                if (this.activeSim) this.activeSim.reset();
+
+                const btn = $('btn-toggle');
+                btn.className = 'btn btn-play';
+                $('icon-toggle').setAttribute('data-lucide', 'play');
+                $('lbl-toggle').innerText = "Iniciar Simulación";
+                lucide.createIcons();
+
+                plotSystem.clear();
+                drawFrame(); // Draw zero state
+            }
+        };
+
+        /* Bucle Principal */
+        let plotTimer = 0;
+        function loop(time) {
+            if (!engine.run) return;
+
+            // Calculate delta time ensuring it doesn't jump too far if tab is inactive
+            let realDt = (time - engine.lastTime) / 1000;
+            engine.lastTime = time;
+            if (realDt > 0.1) realDt = 0.016;
+
+            // Integration step (Euler-Cromer or RK4)
+            if (engine.activeSim) {
+                // Run multiple physical sub-steps for stability if needed
+                engine.activeSim.step(engine.dt);
+            }
+            engine.t += engine.dt;
+
+            // Update Plot (throttle DOM updates to ~20FPS)
+            plotTimer += engine.dt;
+            if (plotTimer > 0.05) {
+                plotTimer = 0;
+                if (engine.activeSim) {
+                    const { p1, p2, p3 } = engine.activeSim.getPlotData();
+                    plotSystem.push(engine.t, p1, p2, p3);
+                    plotSystem.flashUpdate(p3 !== null);
+                    updateHUD(engine.activeSim.getTelemetry());
+                }
+            }
+
+            drawFrame();
+            requestAnimationFrame(loop);
+        }
+
+        // ==================================================
+        // 🖌️ RENDERIZADOR CANVAS 2D
+        // ==================================================
+        const canvas = $('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Viewport Camera (GeoGebra Style Panning/Zooming)
+        const cam = {
+            x: 0, y: 0, // Offset
+            scale: 100, // Pixels per meter
+            isDragging: false, dragStartX: 0, dragStartY: 0,
+
+            zoom(factor) { this.scale *= factor; this.scale = Math.max(10, Math.min(this.scale, 1000)); drawFrame(); },
+            reset() { this.x = 0; this.y = 0; this.scale = 100; drawFrame(); },
+
+            // Transform functions Helper
+            scrX(worldX) { return canvas.width / 2 + this.x + (worldX * this.scale); },
+            scrY(worldY) { return canvas.height / 2 + this.y - (worldY * this.scale); }, // Y up
+            wldX(scrX) { return (scrX - canvas.width / 2 - this.x) / this.scale; },
+            wldY(scrY) { return -(scrY - canvas.height / 2 - this.y) / this.scale; }
+        };
+
+        function resize() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `${rect.height}px`;
+            // Fix cam for responsive
+            canvas.widthLogical = rect.width;
+            canvas.heightLogical = rect.height;
+            drawFrame();
+        }
+        window.addEventListener('resize', resize);
+
+        // Camera Handlers
+        canvas.addEventListener('mousedown', e => { cam.isDragging = true; cam.dragStartX = e.clientX - cam.x; cam.dragStartY = e.clientY - cam.y; });
+        window.addEventListener('mousemove', e => { if (!cam.isDragging) return; cam.x = e.clientX - cam.dragStartX; cam.y = e.clientY - cam.dragStartY; drawFrame(); });
+        window.addEventListener('mouseup', () => cam.isDragging = false);
+        canvas.addEventListener('wheel', e => { e.preventDefault(); const zoomDir = e.deltaY > 0 ? 0.9 : 1.1; cam.zoom(zoomDir); });
+
+        function drawGrid() {
+            const cw = canvas.widthLogical || canvas.width;
+            const ch = canvas.heightLogical || canvas.height;
+
+            ctx.clearRect(0, 0, cw, ch);
+
+            // Determine logical grid step based on scale
+            let stepMeters = 1;
+            if (cam.scale > 200) stepMeters = 0.5;
+            if (cam.scale > 500) stepMeters = 0.1;
+            if (cam.scale < 50) stepMeters = 2;
+
+            const stepPx = stepMeters * cam.scale;
+
+            // Find start offsets
+            const startX = (cw / 2 + cam.x) % stepPx;
+            const startY = (ch / 2 + cam.y) % stepPx;
+
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#333'; // Grid oscura
+
+            ctx.beginPath();
+            // Lineas verticales
+            for (let x = startX - stepPx; x < cw + stepPx; x += stepPx) { ctx.moveTo(x, 0); ctx.lineTo(x, ch); }
+            // Lineas horizontales
+            for (let y = startY - stepPx; y < ch + stepPx; y += stepPx) { ctx.moveTo(0, y); ctx.lineTo(cw, y); }
+            ctx.stroke();
+
+            // Ejes principales
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#555';
+            ctx.beginPath();
+            const axisX = cam.scrX(0); const axisY = cam.scrY(0);
+            if (axisX > 0 && axisX < cw) { ctx.moveTo(axisX, 0); ctx.lineTo(axisX, ch); } // Y Axis
+            if (axisY > 0 && axisY < ch) { ctx.moveTo(0, axisY); ctx.lineTo(cw, axisY); } // X Axis
+            ctx.stroke();
+
+            // Marcas numericas
+            ctx.fillStyle = '#999'; ctx.font = '12px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            // X marks
+            if (axisY > 0 && axisY < ch) {
+                for (let x = startX - stepPx; x < cw + stepPx; x += stepPx) {
+                    const val = cam.wldX(x);
+                    if (Math.abs(val) > 0.01) ctx.fillText(format(val, 1), x, axisY + 5);
+                }
+            }
+        }
+
+        function drawFrame() {
+            if (!canvas.widthLogical) return;
+            drawGrid();
+            if (engine.activeSim) engine.activeSim.draw(ctx, cam);
+        }
+
+        function updateHUD(data) {
+            const hud = $('hud-data');
+            hud.innerHTML = '';
+            for (const [key, val] of Object.entries(data)) {
+                hud.innerHTML += `
+          <div class="hud-val">
+            <span class="hud-lbl">${key}</span>
+            <span class="hud-num">${val}</span>
+          </div>
+        `;
+            }
+        }
+
+        // ==================================================
+        // 🧬 MODELOS FÍSICOS (SIMULADORES)
+        // ==================================================
+
+        // Sim 1: Movimiento Armónico Simple (Masa-Resorte)
+        class ModelMAS {
+            constructor() {
+                this.params = { m: 1, k: 50, A: 2, phi: 0 };
+                this.state = { x: 2, v: 0, a: 0 };
+            }
+            reset() {
+                this.state.x = this.params.A * Math.cos(this.params.phi * Math.PI / 180);
+                this.state.v = 0;
+            }
+            step(dt) {
+                // Euler-Cromer integration
+                this.state.a = (-this.params.k * this.state.x) / this.params.m;
+                this.state.v += this.state.a * dt;
+                this.state.x += this.state.v * dt;
+            }
+            getPlotData() {
+                let Ek = 0.5 * this.params.m * this.state.v * this.state.v;
+                let Ep = 0.5 * this.params.k * this.state.x * this.state.x;
+                let ETotal = Ek + Ep;
+                return { p1: Ek, p2: Ep, p3: ETotal }; // Joules
+            }
+            getTelemetry() {
+                return {
+                    "x (m)": format(this.state.x),
+                    "v (m/s)": format(this.state.v),
+                    "F (N)": format(-this.params.k * this.state.x),
+                    "Energía (J)": format(0.5 * this.params.k * this.state.x * this.state.x + 0.5 * this.params.m * this.state.v * this.state.v, 1)
+                };
+            }
+            draw(ctx, cam) {
+                // Draw Wall
+                const wallX = cam.scrX(-4);
+                ctx.fillStyle = '#475569';
+                ctx.fillRect(wallX - 20, cam.scrY(1), 20, cam.scale * 2);
+
+                const blockX = cam.scrX(this.state.x);
+                const blockY = cam.scrY(0);
+                const size = 0.8 * cam.scale;
+
+                // Draw Spring (Zig-zag)
+                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 4; ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(wallX, blockY);
+                const coils = 15;
+                const L = blockX - size / 2 - wallX;
+                const dx = L / coils;
+                for (let i = 1; i < coils; i++) {
+                    ctx.lineTo(wallX + i * dx, blockY + (i % 2 === 0 ? 20 : -20));
+                }
+                ctx.lineTo(wallX + L, blockY);
+                ctx.stroke();
+
+                // Draw Block
+                ctx.fillStyle = getVar('--primary');
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+                ctx.fillRect(blockX - size / 2, blockY - size / 2, size, size);
+                ctx.strokeRect(blockX - size / 2, blockY - size / 2, size, size);
+
+                // Draw force vector
+                let F = -this.params.k * this.state.x;
+                if (Math.abs(F) > 1) {
+                    ctx.strokeStyle = getVar('--danger'); ctx.fillStyle = getVar('--danger');
+                    const len = F * 2; // px
+                    ctx.beginPath(); ctx.moveTo(blockX, blockY - size / 2 - 10); ctx.lineTo(blockX + len, blockY - size / 2 - 10); ctx.stroke();
+                    ctx.fillText("F", blockX + len, blockY - size / 2 - 20);
+                }
+            }
+        }
+
+        // Sim 2: Péndulo Simple
+        class ModelPendulum {
+            constructor() {
+                this.params = { length: 2, g: 9.8, theta0: 45 };
+                this.state = { theta: 45 * Math.PI / 180, omega: 0, alpha: 0 };
+            }
+            reset() {
+                this.state.theta = this.params.theta0 * Math.PI / 180;
+                this.state.omega = 0;
+            }
+            step(dt) {
+                this.state.alpha = -(this.params.g / this.params.length) * Math.sin(this.state.theta);
+                this.state.omega += this.state.alpha * dt;
+                this.state.theta += this.state.omega * dt;
+            }
+            getPlotData() {
+                // Plotting Angle vs Velocity for Phase diagram, or Angle vs Time. For consistency, let's plot Angle and Omega.
+                return { p1: this.state.theta * 180 / Math.PI, p2: this.state.omega, p3: null };
+            }
+            getTelemetry() {
+                return {
+                    "Ángulo (°)": format(this.state.theta * 180 / Math.PI),
+                    "ω (rad/s)": format(this.state.omega),
+                    "Período (s)": format(2 * Math.PI * Math.sqrt(this.params.length / this.params.g))
+                };
+            }
+            draw(ctx, cam) {
+                const pivotX = cam.scrX(0); const pivotY = cam.scrY(2); // Pivot top
+                const bobX = cam.scrX(this.params.length * Math.sin(this.state.theta));
+                const bobY = cam.scrY(2 - this.params.length * Math.cos(this.state.theta));
+
+                // Pivot
+                ctx.fillStyle = '#64748b';
+                ctx.fillRect(pivotX - 20, pivotY - 10, 40, 10);
+
+                // Rope
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(pivotX, pivotY); ctx.lineTo(bobX, bobY); ctx.stroke();
+
+                // Bob
+                ctx.fillStyle = getVar('--accent');
+                ctx.beginPath(); ctx.arc(bobX, bobY, 20, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+                // Trail logic could be added here
+            }
+        }
+
+
+        // ==================================================
+        // 📖 BASE DE DATOS DEL LIBRO COMPLETO (24 CAPÍTULOS)
+        // ==================================================
+        const chapters = [
+            {
+                id: "cap1", title: "1. Introducción a Oscilaciones",
+                simType: null, // Sin simulación directa, solo teoría
+                theory: `
+          <h1>Sistemas Oscilatorios</h1>
+          <p>Un sistema oscilatorio es cualquier sistema físico que experimenta movimiento periódico alrededor de una posición de equilibrio estable.</p>
+          <div class="alert"><i data-lucide="info"></i>Todo movimiento repetitivo en el tiempo se considera periódico.</div>
+          <h2>Ecuación Fundamental</h2>
+          <div class="math-block">
+            \\[ T = \\frac{1}{f} \\quad ; \\quad \\omega = 2\\pi f = \\frac{2\\pi}{T} \\]
+          </div>
+          <p>Este laboratorio virtual te permitirá visualizar y manipular ecuaciones complejas en tiempo real resolviéndolas por integración numérica (Euler-Cromer).</p>
+        `
+            },
+            {
+                id: "cap2", title: "2. Movimiento Armónico Simple",
+                simType: "MAS",
+                controls: [
+                    { label: "Masa (kg)", param: "m", min: 0.1, max: 10, step: 0.1, val: 1 },
+                    { label: "Constante k (N/m)", param: "k", min: 10, max: 200, step: 1, val: 50 },
+                    { label: "Amplitud (m)", param: "A", min: 0.5, max: 5, step: 0.1, val: 2 }
+                ],
+                theory: `
+          <h1>Movimiento Armónico Simple (MAS)</h1>
+          <p>El MAS ocurre cuando la fuerza restauradora es directamente proporcional al desplazamiento según la Ley de Hooke $F = -kx$.</p>
+          <div class="math-block">
+            \\[ m\\frac{d^2x}{dt^2} + kx = 0 \\quad \\implies \\quad x(t) = A\\cos(\\omega t + \\phi) \\]
+          </div>
+          <h2>Conservación de la Energía</h2>
+          <p>La energía total $E$ oscila transfiriéndose de potencial $U$ a cinética $K$.</p>
+          <div class="math-block">
+            \\[ E = \\frac{1}{2}kx^2 + \\frac{1}{2}mv^2 = \\frac{1}{2}kA^2 = \\text{Constante} \\]
+          </div>
+        `
+            },
+            {
+                id: "cap7", title: "7. Péndulo Simple",
+                simType: "PENDULUM",
+                controls: [
+                    { label: "Longitud (m)", param: "length", min: 0.5, max: 5, step: 0.1, val: 2 },
+                    { label: "Gravedad (m/s²)", param: "g", min: 1.6, max: 20, step: 0.1, val: 9.8 },
+                    { label: "Ángulo Inicial (°)", param: "theta0", min: -90, max: 90, step: 1, val: 45 }
+                ],
+                theory: `
+          <h1>Péndulo Simple</h1>
+          <p>Una masa puntual suspendida por un hilo inextensible. Para ángulos pequeños ($\\sin\\theta \\approx \\theta$), exhibe Movimiento Armónico Simple.</p>
+          <div class="math-block">
+            \\[ \\frac{d^2\\theta}{dt^2} + \\frac{g}{L}\\sin\\theta = 0 \\]
+          </div>
+          <h2>Aproximación de ángulos pequeños</h2>
+          <div class="math-block">
+    // ==================================================
+    // 🌊 SIM 2: OSCILACIONES AMORTIGUADAS
+    // ==================================================
+    class ModelDamped {
+      constructor() {
+        this.params = { m: 1, k: 50, b: 2, x0: 4, v0: 0 };
+        this.state = { x: 4, v: 0, a: 0 };
+        this.E0 = 0.5 * 50 * 16;
+      }
+      reset() {
+        this.state.x = this.params.x0; this.state.v = this.params.v0;
+        this.E0 = 0.5 * this.params.k * this.state.x * this.state.x + 0.5 * this.params.m * this.state.v * this.state.v;
+      }
+      step(dt) {
+        // Ecuación: m*a + b*v + k*x = 0
+        this.state.a = (-this.params.k * this.state.x - this.params.b * this.state.v) / this.params.m;
+        this.state.v += this.state.a * dt;
+        this.state.x += this.state.v * dt;
+      }
+      getPlotData() {
+        return { 
+          p1: 0.5 * this.params.m * this.state.v * this.state.v, 
+          p2: 0.5 * this.params.k * this.state.x * this.state.x, 
+          p3: 0.5 * this.params.m * this.state.v * this.state.v + 0.5 * this.params.k * this.state.x * this.state.x
+        };
+      }
+      getTelemetry() {
+        const E = 0.5 * this.params.m * this.state.v * this.state.v + 0.5 * this.params.k * this.state.x * this.state.x;
+        const gamma = this.params.b / (2 * this.params.m);
+        const w0 = Math.sqrt(this.params.k / this.params.m);
+        const regime = gamma < w0 ? "Subamortiguado" : (gamma > w0 ? "Sobreamortiguado" : "Crítico");
+        return {
+          "Régimen": regime, "x(t)": format(this.state.x), "v(t)": format(this.state.v), "E. Perdida (%)": format((1 - E/this.E0)*100, 1) + "%"
+        };
+      }
+      draw(ctx, cam) {
+        const pivotY = cam.scrY(6); const bobX = cam.scrX(this.state.x); const bobY = cam.scrY(0);
+        
+        ctx.strokeStyle = '#475569'; ctx.lineWidth = 2; // Riel horizontal
+        ctx.beginPath(); ctx.moveTo(cam.scrX(-10), bobY); ctx.lineTo(cam.scrX(10), bobY); ctx.stroke();
+        
+        // Pistón amortiguador (Visual)
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.2)'; ctx.strokeStyle = '#ef4444';
+        ctx.fillRect(cam.scrX(0) - 20, bobY - 15, 40, 30);
+        ctx.strokeRect(cam.scrX(0) - 20, bobY - 15, 40, 30);
+        
+        // Resorte interior amortiguador
+        ctx.beginPath(); ctx.moveTo(cam.scrX(0), bobY); ctx.lineTo(bobX, bobY); ctx.stroke();
+        
+        ctx.fillStyle = getVar('--pot');
+        ctx.fillRect(bobX - 25, bobY - 25, 50, 50);
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(bobX - 25, bobY - 25, 50, 50);
+      }
+    }
+
+    // ==================================================
+    // ⚡ SIM 3: OSCILACIÓN FORZADA (RESONANCIA)
+    // ==================================================
+    class ModelForced {
+      constructor() {
+        this.params = { m: 1, k: 50, b: 0.5, F0: 10, wd: 7.07, x0: 0, v0: 0 };
+        this.state = { x: 0, v: 0, a: 0 };
+      }
+      reset() { this.state.x = this.params.x0; this.state.v = this.params.v0; }
+      step(dt) {
+        // m*a + b*v + k*x = F0 * cos(wd*t)
+        const F_ext = this.params.F0 * Math.cos(this.params.wd * engine.t);
+        this.state.a = (F_ext - this.params.k * this.state.x - this.params.b * this.state.v) / this.params.m;
+        this.state.v += this.state.a * dt;
+        this.state.x += this.state.v * dt;
+      }
+      getPlotData() { return { p1: this.state.x, p2: this.state.v, p3: this.params.F0 * Math.cos(this.params.wd * engine.t) }; }
+      getTelemetry() {
+        const w0 = Math.sqrt(this.params.k / this.params.m);
+        return { "w_n (Natural)": format(w0), "w_d (Fuerza)": format(this.params.wd), "Amplitud Instantánea": format(Math.abs(this.state.x)), "F_ext (N)": format(this.params.F0 * Math.cos(this.params.wd * engine.t)) };
+      }
+      draw(ctx, cam) {
+        const bobX = cam.scrX(this.state.x); const bobY = cam.scrY(0);
+        
+        // Eje central
+        ctx.strokeStyle = '#333'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(cam.scrX(0), cam.scrY(5)); ctx.lineTo(cam.scrX(0), cam.scrY(-5)); ctx.stroke();
+
+        // Bob
+        ctx.fillStyle = getVar('--warning'); ctx.beginPath(); ctx.arc(bobX, bobY, 30, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+        
+        // Fuerza externa radiante
+        const extX = this.params.F0 * Math.cos(this.params.wd * engine.t);
+        if(Math.abs(extX) > 0.1) {
+          ctx.strokeStyle = getVar('--kin'); ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.moveTo(bobX, bobY); ctx.lineTo(bobX + extX * 5, bobY); ctx.stroke();
+        }
+      }
+    }
+
+    // ==================================================
+    // 〰️ SIM 4: ONDAS Y SUPERPOSICIÓN
+    // ==================================================
+    class ModelWave {
+      constructor() {
+        this.params = { A1: 2, k1: 1, w1: 2, A2: 2, k2: 1, w2: -2 }; // w2 negativo formará onda estacionaria si k1=k2
+      }
+      reset() {}
+      step(dt) {}
+      getPlotData() { return { p1: 0, p2: 0, p3: null }; } // No point-plot
+      getTelemetry() { return { "λ1": format(2*Math.PI/this.params.k1), "v1 (fase)": format(this.params.w1/this.params.k1), "λ2": format(2*Math.PI/this.params.k2)}; }
+      draw(ctx, cam) {
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        let first1 = true, first2 = true, firstS = true;
+        
+        // Wave 1, Wave 2, Superposition paths
+        const path1 = new Path2D(), path2 = new Path2D(), pathS = new Path2D();
+        
+        const wMax = canvas.widthLogical || canvas.width;
+        for(let px = 0; px < wMax; px += 5) {
+          const x = cam.wldX(px);
+          const y1 = this.params.A1 * Math.sin(this.params.k1 * x - this.params.w1 * engine.t);
+          const y2 = this.params.A2 * Math.sin(this.params.k2 * x - this.params.w2 * engine.t);
+          const ys = y1 + y2;
+          
+          if(first1) { path1.moveTo(px, cam.scrY(y1 + 5)); first1 = false; } else path1.lineTo(px, cam.scrY(y1 + 5));
+          if(first2) { path2.moveTo(px, cam.scrY(y2 - 5)); first2 = false; } else path2.lineTo(px, cam.scrY(y2 - 5));
+          if(firstS) { pathS.moveTo(px, cam.scrY(ys)); firstS = false; } else pathS.lineTo(px, cam.scrY(ys));
+        }
+        
+        ctx.strokeStyle = getVar('--pot'); ctx.stroke(path1);
+        ctx.strokeStyle = getVar('--kin'); ctx.stroke(path2);
+        ctx.lineWidth = 4; ctx.strokeStyle = getVar('--tot'); ctx.stroke(pathS);
+      }
+    }
+
+    // ==================================================
+    // 📖 BASE DE DATOS DEL LIBRO COMPLETO (24 CAPÍTULOS)
+    // ==================================================
+    const chapters = [
+      { id: "cap1", title: "1. Introducción a sistemas oscilatorios", theory: `< h1 > Sistemas Oscilatorios</h1><p>Un sistema oscilatorio es cualquier sistema físico que experimenta movimiento periódico alrededor de una posición de equilibrio estable.</p><div class="alert"><i data-lucide="info"></i>Todo movimiento repetitivo en el tiempo se considera periódico.</div><h2>Ecuación Fundamental</h2><div class="math-block">\\[ T = \\frac{1}{f} \\quad ; \\quad \\omega = 2\\pi f = \\frac{2\\pi}{T} \\]</div>` },
+      { id: "cap2", title: "2. Movimiento Armónico Simple", simType: "MAS", controls: [{ label: "Masa (kg)", param: "m", min: 0.1, max: 10, step: 0.1, val: 1 }, { label: "Const. k (N/m)", param: "k", min: 10, max: 200, step: 1, val: 50 }, { label: "Amplitud A (m)", param: "A", min: 0.5, max: 5, step: 0.1, val: 3 }, { label: "Fase (rad)", param: "phi", min: -3.14, max: 3.14, step: 0.1, val: 0 }], theory: `< h1 > Movimiento Armónico Simple(MAS)</h1 ><p>El Movimiento Armónico Simple ocurre cuando una partícula se mueve a lo largo de un eje bajo la influencia de una fuerza restauradora proporcional a su desplazamiento.</p><div class="alert"><i data-lucide="zap"></i><b>Ley de Hooke:</b> $F = -kx$</div><div class="math-block">\\[ m\\frac{d^2x}{dt^2} + kx = 0 \\implies x(t) = A\\cos(\\omega t + \\phi) \\]</div><h2>Energía del MAS</h2><p>La energía total mecánica se conserva en este sistema ideal.</p><div class="math-block">\\[ E = \\frac{1}{2}kx^2 + \\frac{1}{2}mv^2 = \\frac{1}{2}kA^2 \\]</div>` },
+      { id: "cap3", title: "3. Movimiento Armónico Compuesto", theory: `< h1 > Movimiento Armónico Compuesto</h1 ><p>Superposición analítica de dos o más MAS paralelos o perpendiculares.</p><div class="math-block">\\[ x(t) = A_1\\sin(\\omega_1 t) + A_2\\sin(\\omega_2 t + \\phi) \\]</div>` },
+      { id: "cap4", title: "4. Oscilaciones Amortiguadas", simType: "DAMPED", controls: [{ label: "Masa (kg)", param: "m", min: 0.1, max: 5, step: 0.1, val: 1 }, { label: "Const. k (N/m)", param: "k", min: 10, max: 100, step: 1, val: 50 }, { label: "Amortiguamiento b", param: "b", min: 0, max: 20, step: 0.1, val: 1.5 }, { label: "Pos Inicial x0", param: "x0", min: -10, max: 10, step: 0.5, val: 5 }], theory: `< h1 > Oscilaciones Amortiguadas</h1 ><p>Toda oscilación física real pierde energía por fricción o resistencia de fluidos. Modelo de resistencia lineal $F_r = -bv$.</p><div class="math-block">\\[ m\\frac{d^2x}{dt^2} + b\\frac{dx}{dt} + kx = 0 \\]</div><h2>Casos de Amortiguamiento</h2><p>El factor $\\gamma = b/(2m)$ determina la raíz del polinomio característico:</p><ul><li><b>Subamortiguado ($\\gamma < \\omega_0$):</b> Oscila decreciendo exponencialmente.</li><li><b>Crítico ($\\gamma = \\omega_0$):</b> Retorna al equilibrio en el menor tiempo posible sin oscilar.</li><li><b>Sobreamortiguado ($\\gamma > \\omega_0$):</b> Retorna muy lento y arrastrado.</li></ul>` },
+      { id: "cap5", title: "5. Oscilaciones Forzadas", theory: `< h1 > Oscilaciones Forzadas</h1 > <p>Aceleración bajo inducción externa.</p>` },
+      { id: "cap6", title: "6. Resonancia", simType: "FORCED", controls: [{ label: "Frec. Impulsora ωd", param: "wd", min: 0.1, max: 20, step: 0.1, val: 7.07 }, { label: "Fuerza F0 (N)", param: "F0", min: 1, max: 50, step: 1, val: 10 }, { label: "Amortiguamiento b", param: "b", min: 0.1, max: 5, step: 0.1, val: 0.5 }, { label: "Masa (kg)", param: "m", min: 0.1, max: 5, step: 0.1, val: 1 }, { label: "k (N/m)", param: "k", min: 10, max: 100, step: 1, val: 50 }], theory: `< h1 > Forzada y Resonancia</h1 ><p>Se inyecta energía al sistema armónico por una fuerza oscilante $F(t) = F_0 \\cos(\\omega_d t)$.</p><div class="math-block">\\[ m\\ddot{x} + b\\dot{x} + kx = F_0 \\cos(\\omega_d t) \\]</div><h2>Amplitud de Resonancia</h2><p>Cuando la frecuencia de la fuerza externa ($\\omega_d$) iguala la frecuencia natural del oscilador ($\\omega_0 = \\sqrt{k/m}$), ocurre la "catástrofe" o salto exponencial en amplitud conocido como resonancia.</p><div class="math-block">\\[ A = \\frac{F_0}{\\sqrt{(k - m\\omega_d^2)^2 + (b\\omega_d)^2}} \\]</div>` },
+      { id: "cap7", title: "7. Péndulo simple", theory: `< h1 > Péndulo Simple</h1 ><p>Gravedad como fuerza de restitución para cuerpos atados a una cuerda sin masa.</p><p>Ecuación: $\\ddot{\\theta} + (g/L)\\sin\\theta = 0$</p>` },
+      { id: "cap8", title: "8. Péndulo físico", theory: `< h1 > Péndulo Físico</h1 ><p>A diferencia del simple, se considera la distribución de masa del objeto extendido (Inercia).</p><div class="math-block">\\[ T = 2\\pi \\sqrt{\\frac{I}{mgd}} \\]</div>` },
+      { id: "cap9", title: "9. Péndulo compuesto", theory: `< h1 > Péndulo Compuesto</h1 > <p>Generalización matemática sobre ejes paralelos (Teorema de Steiner).</p>` },
+      { id: "cap10", title: "10. Péndulo doble", theory: `< h1 > Péndulo Doble(Dinámica Caótica)</h1 ><p>Sistema no lineal famoso por su extrema sensibilidad a las condiciones iniciales en regímenes no armónicos.</p><p>Las ecuaciones de movimiento se derivan típicamente usando la formulación de Lagrange debido a las múltiples componentes y restricciones interconectadas.</p>` },
+      { id: "cap11", title: "11. Osciladores acoplados", theory: `< h1 > Osciladores Acoplados</h1 > <p>Modos normales de vibración entre sistemas físicos entrelazados (ej. masas unidas por múltiples resortes).</p>` },
+      { id: "cap12", title: "12. Movimiento ondulatorio", theory: `< h1 > Movimiento Ondulatorio</h1 > <p>Perturbación transmitida por el espacio propagando energía sin acarreo neto de materia.</p>` },
+      { id: "cap13", title: "13. Ondas mecánicas", theory: `< h1 > Ondas Mecánicas</h1 > <p>Propagación que requiere estrictamente de un medio físico dotado de propiedades elásticas e inertes.</p>` },
+      { id: "cap14", title: "14. Ondas transversales", theory: `< h1 > Ondas Transversales</h1 > <p>Partículas vibran perpendicularmente a la dirección de propagación.</p>` },
+      { id: "cap15", title: "15. Ondas longitudinales", theory: `< h1 > Ondas Longitudinales</h1 > <p>Compresión y rarefacción en paralelo a la propagación del flujo energético. Ejemplo: el sonido.</p>` },
+      { id: "cap16", title: "16. Interferencia", theory: `< h1 > Interferencia</h1 > <p>Suma constructiva o destructiva entre frentes de onda (Principio de Huygens).</p>` },
+      { id: "cap17", title: "17. Superposición", simType: "WAVES", controls: [{ label: "Amplitud 1", param: "A1", min: 0.1, max: 5, step: 0.1, val: 2 }, { label: "Velocidad Ang. 1 (ω)", param: "w1", min: -5, max: 5, step: 0.1, val: 2 }, { label: "N° de Onda 1 (k)", param: "k1", min: 0.1, max: 5, step: 0.1, val: 1 }, { label: "Amplitud 2", param: "A2", min: 0.1, max: 5, step: 0.1, val: 2 }, { label: "Velocidad Ang. 2 (ω)", param: "w2", min: -5, max: 5, step: 0.1, val: -2 }, { label: "N° de Onda 2 (k)", param: "k2", min: 0.1, max: 5, step: 0.1, val: 1 }], theory: `< h1 > Superposición de Ondas</h1 ><p>Física lineal permite la suma algebráica estricta de perturbaciones coincidentes espacialmente.</p><div class="math-block">\\[ y(x,t) = y_1(x,t) + y_2(x,t) \\]</div><p>En el plano visual ajustando $\\omega_2 = -\\omega_1$ originarás una <b>Onda Estacionaria</b> perfecta con nodos inmóviles.</p>` },
+      { id: "cap18", title: "18. Batidos", theory: `< h1 > Batidos Intermitentes</h1 > <p>Intermodulación generada por frecuencias similares incidentes: pulsos sonoros u ondulatorios.</p>` },
+      { id: "cap19", title: "19. Ondas estacionarias", theory: `< h1 > Ondas Estacionarias</h1 > <p>Combinación fija de nodos y antinodos originada en confines acústicos o perimetrales.</p>` },
+      { id: "cap20", title: "20. Ondas en cuerdas", theory: `< h1 > Tensión y Masa Lineal en Cuerdas</h1 ><p>La velocidad de desplazamiento de fase se ancla a $\\mu$: densidad lineal y $T$: Tensión mecánica central.</p><div class="math-block">\\[ v = \\sqrt{\\frac{T}{\\mu}} \\]</div>` },
+      { id: "cap21", title: "21. Ondas sonoras", theory: `< h1 > Ondas Sonoras(Acústica)</h1 > <p>Ecuación aerodinámica de la velocidad e impedancia acústica.</p>` },
+      { id: "cap22", title: "22. Energía en sistemas oscilatorios", theory: `< h1 > Potencia Total Oscilatoria</h1 > <p>Conservación de la invariancia simétrica a lo largo del tiempo.</p>` },
+      { id: "cap23", title: "23. Energía en ondas", theory: `< h1 > Flujo Energético Ondulatorio</h1 > <p>Potencia e intensidad transportada con proporcionalidad al cuadrado de la frecuencia y de su respectiva elongación máxima.</p>` },
+      { id: "cap24", title: "24. Sistemas Caóticos", theory: `< h1 > Teoría del Caos en Física</h1 > <p>Análisis fractal de atractores singulares donde el determinismo topológico cede frente a la entropía.</p>` }
+    ];
+
+    // ==================================================
+    // 🧠 GESTIÓN DE CAPÍTULOS Y RENDERIZADO UI
+    // ==================================================
+
+    function loadChapter(index) {
+        const cap = chapters[index];
+
+        // Update Sidebar UI
+        document.querySelectorAll('.chapter-item').forEach((el, i) => {
+            if (i === index) el.classList.add('active'); else el.classList.remove('active');
+        });
+
+        // Update Theory
+        $('book-content').innerHTML = cap.theory;
+
+        // TypeSet MathJax (trigger render)
+        if (window.MathJax) {
+            MathJax.typesetPromise([$('book-content')]).catch((err) => console.log(err));
+        }
+
+        // Reboot Physics Engine
+        engine.reset();
+        cam.reset();
+        if (cap.simType === "MAS") {
+            engine.activeSim = new ModelMAS();
+            plotSystem.init('Energía Cinética (J)', 'Energía Potencial (J)', 'Energía Total (J)');
+        } else if (cap.simType === "DAMPED") {
+            engine.activeSim = new ModelDamped();
+            plotSystem.init('Energía Cinética (J)', 'Energía Potencial (J)', 'Energía Total (J)');
+        } else if (cap.simType === "FORCED") {
+            engine.activeSim = new ModelForced();
+            plotSystem.init('Posición x(t)', 'Velocidad v(t)', 'Fuerza Ext. (N)');
+        } else if (cap.simType === "PENDULUM") {
+            engine.activeSim = new ModelPendulum();
+            plotSystem.init('Ángulo θ (°)', 'Vel. Angular ω (rad/s)', null);
+            cam.y = 100; // Mover camara un poco abajo
+        } else if (cap.simType === "WAVES") {
+            engine.activeSim = new ModelWave();
+            plotSystem.init('Onda 1', 'Onda 2', 'Superposición'); // Only for labels, actually doesn't plot time series
+        } else {
+            engine.activeSim = null; // No sim
+            $('canvas-container').style.display = 'none';
+            $('sim-controls').innerHTML = '<p style="color:var(--text-muted)">Este capítulo de teoría no contiene simulador interactivo adosado en esta versión.</p>';
+            return; // Salir sin dibujar controles
+        }
+
+        $('canvas-container').style.display = 'block';
+
+        // Inject Controls
+        const cPanel = $('sim-controls');
+        cPanel.innerHTML = '';
+        if (cap.controls) {
+            cap.controls.forEach(c => {
+                // Actualizar estado obj físico
+                engine.activeSim.params[c.param] = c.val;
+
+                cPanel.innerHTML += `
+            < div class= "control-group" >
+                  <label>${c.label} <span id="lbl-${c.param}">${c.val}</span></label>
+                  <input type="range" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.val}" 
+                    oninput="updateParam('${c.param}', this.value)">
+                </div>
+                `;
+            });
+        }
+
+        engine.activeSim.reset();
+        const telemetry = engine.activeSim.getTelemetry();
+        if(telemetry) updateHUD(telemetry);
+        drawFrame();
+    }
+
+    // Callbacks from created sliders
+    window.updateParam = function (param, val) {
+        $(\`lbl-\${param}\`).innerText = val; // fix this one manually below
+        if (engine.activeSim) {
+            engine.activeSim.params[param] = parseFloat(val);
+            // Si está pausado, hacer reset al cambiar parametros estructurales para verlo instantaneo
+            if (!engine.run) {
+                engine.activeSim.reset();
+                drawFrame();
+                const telemetry = engine.activeSim.getTelemetry();
+                if(telemetry) updateHUD(telemetry);
+            }
+        }
+    }
+
+    // Inicializador
+    window.onload = () => {
+        // Setup Sidebar
+        const sb = $('sidebar');
+        chapters.forEach((cap, i) => {
+            sb.innerHTML += `
+            < div class= "chapter-item" onclick = "loadChapter(${i})" >
+            <div class="chapter-num">${cap.id.replace('cap', '')}</div>
+                ${ cap.title.substring(3) }
+            </div >
+            `;
+        });
+
+            // Setup Canvas
+            resize();
+
+            // Load first Chapter
+            setTimeout(() => loadChapter(1), 500); // Load Cap 2 (MAS) as demo
+
+            // Generar iconos dinámicos
+            lucide.createIcons();
+        };
+
+    </script>
+</body>
+
+</html>
